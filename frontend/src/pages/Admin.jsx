@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Car, Bike, Plus, ListOrdered, Star, TrendingUp, ArrowRight } from 'lucide-react';
+import { Bike, Plus, ListOrdered, Star, ArrowRight } from 'lucide-react';
 import { statsService } from '../services/api';
 import styles from './Admin.module.css';
 
@@ -35,18 +35,6 @@ export default function Admin() {
       label: 'Em Destaque',
       value: stats?.featuredCount || 0,
       color: 'yellow',
-    },
-    {
-      icon: <TrendingUp size={28} />,
-      label: 'Street/Naked',
-      value: stats?.totalMotos || 0,
-      color: 'purple',
-    },
-    {
-      icon: <ListOrdered size={28} />,
-      label: 'Trail/Adventure',
-      value: stats?.totalCars || 0,
-      color: 'blue',
     },
   ];
 
