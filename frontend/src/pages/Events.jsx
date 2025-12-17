@@ -14,7 +14,7 @@ export default function Events() {
     {
       id: 2,
       url: 'https://www.instagram.com/p/DPr9hAnjdPj/',
-      embedUrl: 'https://www.instagram.com/p/DPr9hAnjdPj//embed',
+      embedUrl: 'https://www.instagram.com/p/DPr9hAnjdPj/embed',
       title: 'Encontro de Motociclistas',
     },
     {
