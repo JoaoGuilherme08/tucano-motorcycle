@@ -4,10 +4,15 @@
   "description": "Site vitrine premium para loja de veículos",
   "private": true,
   "scripts": {
+    "start": "cd backend && npm install && node server.js",
+    "build": "cd backend && npm install",
     "backend": "cd backend && npm run dev",
     "frontend": "cd frontend && npm run dev",
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
     "dev": "echo 'Execute em terminais separados: npm run backend e npm run frontend'"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
 
