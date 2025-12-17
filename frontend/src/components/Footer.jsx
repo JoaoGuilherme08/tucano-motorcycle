@@ -73,7 +73,7 @@ export default function Footer() {
             © {currentYear} Tucano Motorcycle. Todos os direitos reservados.
           </p>
           <p className={styles.dev}>
-            Desenvolvido com <span className={styles.heart}>♥</span> para você
+            Desenvolvido por: <a href="https://portfolio-joaocobo.vercel.app/" target="_blank" rel="noopener noreferrer" className={styles.devLink}>João Cobo</a>
           </p>
         </div>
       </div>

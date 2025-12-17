@@ -146,7 +146,14 @@
   color: var(--color-gray-text);
 }
 
-.heart {
+.devLink {
   color: var(--color-orange);
+  font-weight: 600;
+  transition: all var(--transition-fast);
+}
+
+.devLink:hover {
+  color: var(--color-orange-light);
+  text-decoration: underline;
 }
 
