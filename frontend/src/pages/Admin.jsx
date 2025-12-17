@@ -125,7 +125,7 @@ export default function Admin() {
           transition={{ duration: 0.5, delay: 0.5 }}
         >
           <h2 className={styles.sectionTitle}>
-            <TrendingUp size={20} />
+            <Star size={20} />
             Dicas para Vender Mais
           </h2>
           <ul className={styles.tipsList}>
