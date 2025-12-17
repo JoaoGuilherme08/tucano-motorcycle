@@ -1,2 +1,2 @@
-web: cd backend && npm install && npm rebuild better-sqlite3 && node server.js
+web: cd backend && rm -rf node_modules && npm install && node server.js
 
