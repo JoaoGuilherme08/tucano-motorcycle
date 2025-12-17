@@ -176,10 +176,17 @@ ul, ol {
 
 /* Efeito de texto brilhante */
 .text-gradient {
-  background: var(--gradient-orange);
+  color: #FF6A00; /* Fallback para navegadores sem suporte */
+  background: linear-gradient(135deg, #FF6A00 0%, #FF8533 50%, #FF6A00 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+@supports (-webkit-background-clip: text) {
+  .text-gradient {
+    color: transparent;
+  }
 }
 
 /* Button Styles */
