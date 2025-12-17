@@ -1,0 +1,247 @@
+.card {
+  background: var(--color-gray-dark);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-medium);
+  border: 1px solid transparent;
+}
+
+.card:hover {
+  border-color: var(--color-gray);
+  box-shadow: var(--shadow-card), var(--shadow-glow);
+}
+
+.cardLink {
+  display: block;
+}
+
+.imageWrapper {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: var(--color-black-medium);
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-slow);
+}
+
+.card:hover .image {
+  transform: scale(1.08);
+}
+
+.imageOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  pointer-events: none;
+}
+
+.featuredBadge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: var(--gradient-orange);
+  color: var(--color-white);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(255, 106, 0, 0.4);
+}
+
+.typeBadge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 8px 14px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  color: var(--color-white);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.content {
+  padding: 24px;
+}
+
+.model {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: 16px;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.specs {
+  display: flex;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.spec {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--color-gray-text);
+}
+
+.spec svg {
+  color: var(--color-orange);
+}
+
+.footer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-gray);
+}
+
+.price {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.priceLabel {
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-gray-text);
+}
+
+.priceValue {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-orange);
+}
+
+.cta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: rgba(255, 106, 0, 0.1);
+  color: var(--color-orange);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-fast);
+}
+
+.card:hover .cta {
+  background: var(--color-orange);
+  color: var(--color-white);
+}
+
+.cta svg {
+  transition: transform var(--transition-fast);
+}
+
+.card:hover .cta svg {
+  transform: translateX(4px);
+}
+
+/* Skeleton styles */
+.skeletonImage {
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-dark) 25%,
+    var(--color-gray) 50%,
+    var(--color-gray-dark) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+.skeletonText {
+  background: linear-gradient(
+    90deg,
+    var(--color-gray-dark) 25%,
+    var(--color-gray) 50%,
+    var(--color-gray-dark) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeletonTitle {
+  height: 24px;
+  width: 80%;
+  margin-bottom: 16px;
+}
+
+.skeletonSpec {
+  height: 20px;
+  width: 80px;
+}
+
+.skeletonPrice {
+  height: 28px;
+  width: 120px;
+}
+
+.skeletonBtn {
+  height: 40px;
+  width: 100px;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .content {
+    padding: 20px;
+  }
+
+  .model {
+    font-size: 16px;
+  }
+
+  .priceValue {
+    font-size: 20px;
+  }
+
+  .cta span {
+    display: none;
+  }
+
+  .cta {
+    padding: 10px;
+  }
+}
+

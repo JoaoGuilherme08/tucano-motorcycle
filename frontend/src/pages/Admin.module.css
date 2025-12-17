@@ -1,0 +1,258 @@
+.admin {
+  min-height: 100vh;
+  padding: 120px 0 80px;
+  background: var(--color-black);
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+@media (min-width: 768px) {
+  .header {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--color-gray-text);
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+
+@media (min-width: 768px) {
+  .stats {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+  }
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 24px;
+  background: var(--color-gray-dark);
+  border-radius: var(--border-radius-lg);
+  border: 1px solid var(--color-gray);
+  transition: all var(--transition-fast);
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card);
+}
+
+.statIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: var(--border-radius-md);
+  flex-shrink: 0;
+}
+
+.statCard.blue .statIcon {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.statCard.purple .statIcon {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+.statCard.orange .statIcon {
+  background: rgba(255, 106, 0, 0.15);
+  color: var(--color-orange);
+}
+
+.statCard.yellow .statIcon {
+  background: rgba(234, 179, 8, 0.15);
+  color: #eab308;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.statValue {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--color-white);
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-gray-text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.sectionTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: 20px;
+}
+
+.sectionTitle svg {
+  color: var(--color-orange);
+}
+
+.actionsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .actionsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.actionCard {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 24px;
+  background: var(--color-gray-dark);
+  border: 1px solid var(--color-gray);
+  border-radius: var(--border-radius-lg);
+  transition: all var(--transition-fast);
+}
+
+.actionCard:hover {
+  border-color: var(--color-orange);
+  background: var(--color-gray);
+}
+
+.actionCard.primary {
+  background: rgba(255, 106, 0, 0.1);
+  border-color: rgba(255, 106, 0, 0.3);
+}
+
+.actionCard.primary:hover {
+  background: rgba(255, 106, 0, 0.2);
+  border-color: var(--color-orange);
+}
+
+.actionIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: var(--color-gray);
+  color: var(--color-orange);
+  border-radius: var(--border-radius-md);
+  flex-shrink: 0;
+}
+
+.actionCard.primary .actionIcon {
+  background: var(--color-orange);
+  color: var(--color-white);
+}
+
+.actionInfo {
+  flex: 1;
+}
+
+.actionInfo h3 {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: 4px;
+}
+
+.actionInfo p {
+  font-size: 13px;
+  color: var(--color-gray-text);
+}
+
+.actionArrow {
+  color: var(--color-gray-text);
+  transition: all var(--transition-fast);
+}
+
+.actionCard:hover .actionArrow {
+  color: var(--color-orange);
+  transform: translateX(4px);
+}
+
+.tips {
+  margin-top: 48px;
+  padding: 32px;
+  background: var(--color-gray-dark);
+  border-radius: var(--border-radius-lg);
+}
+
+.tipsList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tipsList li {
+  display: flex;
+  gap: 20px;
+}
+
+.tipNumber {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: rgba(255, 106, 0, 0.1);
+  color: var(--color-orange);
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.tipsList li strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-white);
+  margin-bottom: 4px;
+}
+
+.tipsList li p {
+  font-size: 14px;
+  color: var(--color-gray-text);
+  line-height: 1.5;
+}
+

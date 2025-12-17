@@ -1,0 +1,13 @@
+{
+  "name": "veiculos-premium",
+  "version": "1.0.0",
+  "description": "Site vitrine premium para loja de veículos",
+  "private": true,
+  "scripts": {
+    "backend": "cd backend && npm run dev",
+    "frontend": "cd frontend && npm run dev",
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "dev": "echo 'Execute em terminais separados: npm run backend e npm run frontend'"
+  }
+}
+

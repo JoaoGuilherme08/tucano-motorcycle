@@ -1,0 +1,359 @@
+.vehicles {
+  min-height: 100vh;
+  padding-bottom: 80px;
+}
+
+/* Header */
+.header {
+  position: relative;
+  padding: 140px 0 60px;
+  overflow: hidden;
+}
+
+.headerBg {
+  position: absolute;
+  inset: 0;
+  background: 
+    radial-gradient(ellipse 60% 50% at 50% 0%, rgba(255, 106, 0, 0.1), transparent),
+    var(--color-black);
+}
+
+.headerContent {
+  position: relative;
+  text-align: center;
+}
+
+.title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: 12px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: var(--color-gray-text);
+}
+
+/* Filters Bar */
+.filtersBar {
+  position: sticky;
+  top: 80px;
+  z-index: 100;
+  padding: 20px 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--color-gray-dark);
+}
+
+.filtersBarContent {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+@media (min-width: 768px) {
+  .filtersBarContent {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.searchWrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  background: var(--color-gray-dark);
+  border-radius: var(--border-radius-md);
+  flex: 1;
+  max-width: 400px;
+}
+
+.searchWrapper svg {
+  color: var(--color-gray-text);
+  flex-shrink: 0;
+}
+
+.searchInput {
+  flex: 1;
+  background: none;
+  border: none;
+  color: var(--color-white);
+  font-size: 15px;
+}
+
+.searchInput::placeholder {
+  color: var(--color-gray-text);
+}
+
+.filtersActions {
+  display: flex;
+  gap: 12px;
+}
+
+.sortWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  background: var(--color-gray-dark);
+  border-radius: var(--border-radius-md);
+  color: var(--color-gray-text);
+}
+
+.sortWrapper svg:first-child {
+  flex-shrink: 0;
+}
+
+.sortSelect {
+  appearance: none;
+  background: none;
+  border: none;
+  color: var(--color-white);
+  font-size: 14px;
+  font-weight: 500;
+  padding-right: 24px;
+  cursor: pointer;
+}
+
+.sortSelect option {
+  background: var(--color-gray-dark);
+  color: var(--color-white);
+}
+
+.sortArrow {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 14px 20px;
+  background: var(--color-gray-dark);
+  color: var(--color-white);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--border-radius-md);
+  transition: all var(--transition-fast);
+}
+
+.filterBtn:hover {
+  background: var(--color-gray);
+}
+
+.filterBtn.active {
+  background: rgba(255, 106, 0, 0.15);
+  color: var(--color-orange);
+}
+
+.filterCount {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  background: var(--color-orange);
+  color: var(--color-white);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+/* Filters Panel */
+.filtersPanel {
+  overflow: hidden;
+}
+
+.filtersPanelContent {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  padding: 24px 0;
+  border-top: 1px solid var(--color-gray-dark);
+  margin-top: 20px;
+}
+
+@media (min-width: 768px) {
+  .filtersPanelContent {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .filtersPanelContent {
+    grid-template-columns: repeat(4, 1fr) auto;
+  }
+}
+
+.filterGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.filterGroup label {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-gray-text);
+}
+
+.typeButtons {
+  display: flex;
+  gap: 8px;
+}
+
+.typeBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 16px;
+  background: var(--color-gray-dark);
+  color: var(--color-gray-text);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--border-radius-sm);
+  transition: all var(--transition-fast);
+}
+
+.typeBtn:hover {
+  background: var(--color-gray);
+  color: var(--color-white);
+}
+
+.typeBtn.active {
+  background: var(--color-orange);
+  color: var(--color-white);
+}
+
+.rangeInputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rangeInputs input {
+  flex: 1;
+  min-width: 120px;
+  padding: 14px 16px;
+  font-size: 15px;
+  background: var(--color-gray-dark);
+  border: 1px solid var(--color-gray);
+  border-radius: var(--border-radius-sm);
+  color: var(--color-white);
+}
+
+.rangeInputs input::placeholder {
+  color: var(--color-gray-text);
+}
+
+.rangeInputs input:focus {
+  outline: none;
+  border-color: var(--color-orange);
+}
+
+.rangeInputs span {
+  font-size: 13px;
+  color: var(--color-gray-text);
+  flex-shrink: 0;
+}
+
+@media (max-width: 480px) {
+  .rangeInputs {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .rangeInputs input {
+    width: 100%;
+    min-width: 100%;
+    padding: 16px;
+    font-size: 16px;
+  }
+  
+  .rangeInputs span {
+    display: none;
+  }
+}
+
+.filtersButtons {
+  display: flex;
+  gap: 12px;
+  align-items: end;
+}
+
+@media (max-width: 1023px) {
+  .filtersButtons {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+}
+
+/* Results */
+.results {
+  padding-top: 40px;
+}
+
+.resultsHeader {
+  margin-bottom: 24px;
+}
+
+.resultsCount {
+  font-size: 14px;
+  color: var(--color-gray-text);
+}
+
+.vehiclesGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 640px) {
+  .vehiclesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .vehiclesGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.emptyState {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 80px 24px;
+  text-align: center;
+}
+
+.emptyState svg {
+  color: var(--color-gray);
+}
+
+.emptyState h3 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.emptyState p {
+  font-size: 15px;
+  color: var(--color-gray-text);
+  max-width: 300px;
+}
+

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120">
+  <defs>
+    <linearGradient id="orangeGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF8C00"/>
+      <stop offset="60%" style="stop-color:#8B4513"/>
+      <stop offset="100%" style="stop-color:#FF8C00"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background shadow -->
+  <text x="10" y="75" font-family="Impact, Arial Black, sans-serif" font-size="72" font-weight="bold" fill="#000" stroke="#000" stroke-width="8">TUCANO</text>
+  
+  <!-- Main text with gradient -->
+  <text x="10" y="75" font-family="Impact, Arial Black, sans-serif" font-size="72" font-weight="bold" fill="url(#orangeGrad)" stroke="#fff" stroke-width="2">TUCANO</text>
+  
+  <!-- MOTORCYCLE text -->
+  <text x="50" y="110" font-family="Georgia, serif" font-size="32" font-weight="bold" fill="#fff" stroke="#000" stroke-width="4">MOTORCYCLE</text>
+  <text x="50" y="110" font-family="Georgia, serif" font-size="32" font-weight="bold" fill="#fff" stroke="#000" stroke-width="1">MOTORCYCLE</text>
+</svg>
