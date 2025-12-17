@@ -163,7 +163,7 @@ export default function Events() {
             </p>
             <div className={styles.ctaButtons}>
               <a
-                href="https://www.instagram.com/tucanomotorcycle"
+                href="https://www.instagram.com/tucano_motorcycle/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn btn-primary"

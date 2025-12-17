@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Car, Phone, Mail, MapPin, Instagram, Facebook, MessageCircle } from 'lucide-react';
+import { Phone, MapPin, Instagram, Facebook, MessageCircle } from 'lucide-react';
 import styles from './Footer.module.css';
 
 export default function Footer() {
@@ -24,11 +24,8 @@ export default function Footer() {
               Garantia de 3 meses de motor e câmbio em todas as motos.
             </p>
             <div className={styles.social}>
-              <a href="#" className={styles.socialLink} aria-label="Instagram">
+              <a href="https://www.instagram.com/tucano_motorcycle/" target="_blank" rel="noopener noreferrer" className={styles.socialLink} aria-label="Instagram">
                 <Instagram size={20} />
-              </a>
-              <a href="#" className={styles.socialLink} aria-label="Facebook">
-                <Facebook size={20} />
               </a>
               <a href="https://wa.me/5518996334805" target="_blank" rel="noopener noreferrer" className={styles.socialLink} aria-label="WhatsApp">
                 <MessageCircle size={20} />
@@ -62,10 +59,6 @@ export default function Footer() {
               <li>
                 <Phone size={18} />
                 <a href="https://wa.me/5518996334805" target="_blank" rel="noopener noreferrer">(18) 99633-4805</a>
-              </li>
-              <li>
-                <Mail size={18} />
-                <span>contato@tucanomotorcycle.com.br</span>
               </li>
               <li>
                 <MapPin size={18} />
