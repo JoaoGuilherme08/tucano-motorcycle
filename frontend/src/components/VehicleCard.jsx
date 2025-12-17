@@ -3,11 +3,13 @@ import { motion } from 'framer-motion';
 import { Gauge, Calendar, ArrowRight, Star } from 'lucide-react';
 import styles from './VehicleCard.module.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+
 export default function VehicleCard({ vehicle, index = 0 }) {
   const primaryImage = vehicle.images?.find(img => img.is_primary) || vehicle.images?.[0];
   const imageUrl = primaryImage
-    ? `http://localhost:3001/uploads/${primaryImage.filename}`
-    : '/placeholder-car.jpg';
+    ? `${API_BASE_URL}/uploads/${primaryImage.filename}`
+    : '/placeholder-moto.jpg';
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('pt-BR', {

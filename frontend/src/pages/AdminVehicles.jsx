@@ -13,6 +13,8 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { vehicleService } from '../services/api';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || '${API_BASE_URL}';
 import styles from './AdminVehicles.module.css';
 
 export default function AdminVehicles() {
@@ -163,7 +165,7 @@ export default function AdminVehicles() {
                           <div className={styles.vehicleImage}>
                             {primaryImage ? (
                               <img
-                                src={`http://localhost:3001/uploads/${primaryImage.filename}`}
+                                src={`${API_BASE_URL}/uploads/${primaryImage.filename}`}
                                 alt={vehicle.model}
                               />
                             ) : (
@@ -241,7 +243,7 @@ export default function AdminVehicles() {
                   <div className={styles.mobileCardImage}>
                     {primaryImage ? (
                       <img
-                        src={`http://localhost:3001/uploads/${primaryImage.filename}`}
+                        src={`${API_BASE_URL}/uploads/${primaryImage.filename}`}
                         alt={vehicle.model}
                       />
                     ) : (

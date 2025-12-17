@@ -13,6 +13,8 @@ import {
   Loader2
 } from 'lucide-react';
 import { vehicleService } from '../services/api';
+
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || '${API_BASE_URL}';
 import styles from './AdminVehicleForm.module.css';
 
 export default function AdminVehicleForm() {
@@ -201,7 +203,7 @@ export default function AdminVehicleForm() {
     ...existingImages.map(img => ({ 
       type: 'existing', 
       id: img.id, 
-      url: `http://localhost:3001/uploads/${img.filename}` 
+      url: `${API_BASE_URL}/uploads/${img.filename}` 
     })),
     ...images.map((img, i) => ({ 
       type: 'new', 

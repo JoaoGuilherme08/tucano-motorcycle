@@ -17,6 +17,8 @@ import {
 import { vehicleService } from '../services/api';
 import styles from './VehicleDetails.module.css';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || '${API_BASE_URL}';
+
 export default function VehicleDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -144,7 +146,7 @@ export default function VehicleDetails() {
               {images.length > 0 ? (
                 <>
                   <img
-                    src={`http://localhost:3001/uploads/${currentImage.filename}`}
+                    src={`${API_BASE_URL}/uploads/${currentImage.filename}`}
                     alt={vehicle.model}
                     onClick={() => setShowLightbox(true)}
                   />
@@ -187,7 +189,7 @@ export default function VehicleDetails() {
                     onClick={() => setCurrentImageIndex(index)}
                   >
                     <img
-                      src={`http://localhost:3001/uploads/${img.filename}`}
+                      src={`${API_BASE_URL}/uploads/${img.filename}`}
                       alt={`${vehicle.model} - Imagem ${index + 1}`}
                     />
                   </button>
@@ -291,7 +293,7 @@ export default function VehicleDetails() {
                   <div className={styles.relatedImage}>
                     {v.images?.[0] ? (
                       <img
-                        src={`http://localhost:3001/uploads/${v.images[0].filename}`}
+                        src={`${API_BASE_URL}/uploads/${v.images[0].filename}`}
                         alt={v.model}
                       />
                     ) : (
@@ -328,7 +330,7 @@ export default function VehicleDetails() {
             
             <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
               <img
-                src={`http://localhost:3001/uploads/${currentImage?.filename}`}
+                src={`${API_BASE_URL}/uploads/${currentImage?.filename}`}
                 alt={vehicle.model}
               />
             </div>
