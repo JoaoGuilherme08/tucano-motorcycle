@@ -6,7 +6,7 @@ import {
   Search, 
   Edit, 
   Trash2, 
-  Car, 
+  Bike, 
   Eye, 
   Star, 
   MoreVertical,
@@ -118,7 +118,7 @@ export default function AdminVehicles() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
           >
-            <Car size={64} />
+            <Bike size={64} />
             <h3>Nenhuma moto encontrada</h3>
             <p>
               {searchTerm 
@@ -169,7 +169,7 @@ export default function AdminVehicles() {
                                 alt={vehicle.model}
                               />
                             ) : (
-                              <Car size={24} />
+                              <Bike size={24} />
                             )}
                           </div>
                           <div className={styles.vehicleInfo}>
@@ -247,7 +247,7 @@ export default function AdminVehicles() {
                         alt={vehicle.model}
                       />
                     ) : (
-                      <Car size={32} />
+                      <Bike size={32} />
                     )}
                   </div>
                   <div className={styles.mobileCardInfo}>

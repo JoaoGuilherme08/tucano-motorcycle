@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Search, SlidersHorizontal, X, Car, ArrowUpDown, ChevronDown } from 'lucide-react';
+import { Search, SlidersHorizontal, X, Bike, ArrowUpDown, ChevronDown } from 'lucide-react';
 import VehicleCard, { VehicleCardSkeleton } from '../components/VehicleCard';
 import { vehicleService } from '../services/api';
 import styles from './Vehicles.module.css';
@@ -319,7 +319,7 @@ export default function Vehicles() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
               >
-                <Car size={64} />
+                <Bike size={64} />
                 <h3>Nenhuma moto encontrada</h3>
                 <p>Tente ajustar os filtros para encontrar mais resultados</p>
                 <button className="btn btn-primary" onClick={clearFilters}>

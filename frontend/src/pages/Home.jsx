@@ -70,7 +70,7 @@ export default function Home() {
             </p>
             <div className={styles.heroCta}>
               <Link to="/veiculos" className="btn btn-primary">
-                <Car size={20} />
+                <Bike size={20} />
                 Ver Veículos
                 <ArrowRight size={18} />
               </Link>

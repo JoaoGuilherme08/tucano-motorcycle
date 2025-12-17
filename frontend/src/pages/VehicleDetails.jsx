@@ -12,7 +12,7 @@ import {
   X,
   Share2,
   Heart,
-  Car
+  Bike
 } from 'lucide-react';
 import { vehicleService } from '../services/api';
 import styles from './VehicleDetails.module.css';
@@ -101,7 +101,7 @@ export default function VehicleDetails() {
     return (
       <div className={styles.loading}>
         <div className={styles.loadingContent}>
-          <Car size={48} className={styles.loadingIcon} />
+          <Bike size={48} className={styles.loadingIcon} />
           <p>Carregando veículo...</p>
         </div>
       </div>
@@ -172,7 +172,7 @@ export default function VehicleDetails() {
                 </>
               ) : (
                 <div className={styles.noImage}>
-                  <Car size={64} />
+                  <Bike size={64} />
                   <p>Sem imagens disponíveis</p>
                 </div>
               )}
@@ -232,7 +232,7 @@ export default function VehicleDetails() {
                 </div>
               </div>
               <div className={styles.spec}>
-                <Car size={20} />
+                <Bike size={20} />
                 <div>
                   <span className={styles.specLabel}>Categoria</span>
                   <span className={styles.specValue}>{vehicle.category || 'Custom'}</span>
@@ -298,7 +298,7 @@ export default function VehicleDetails() {
                       />
                     ) : (
                       <div className={styles.relatedNoImage}>
-                        <Car size={32} />
+                        <Bike size={32} />
                       </div>
                     )}
                   </div>

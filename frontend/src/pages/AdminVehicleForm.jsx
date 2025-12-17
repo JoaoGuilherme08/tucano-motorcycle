@@ -7,7 +7,7 @@ import {
   X, 
   Save, 
   Eye, 
-  Car, 
+  Bike, 
   ImagePlus,
   Star,
   Loader2
@@ -479,7 +479,7 @@ export default function AdminVehicleForm() {
                   <img src={allImages[0].url} alt="Preview" />
                 ) : (
                   <div className={styles.previewPlaceholder}>
-                    <Car size={48} />
+                    <Bike size={48} />
                     <span>Adicione uma foto</span>
                   </div>
                 )}
@@ -524,7 +524,7 @@ export default function AdminVehicleForm() {
                   <img src={allImages[0].url} alt="Preview" />
                 ) : (
                   <div className={styles.previewPlaceholder}>
-                    <Car size={64} />
+                    <Bike size={64} />
                   </div>
                 )}
               </div>
