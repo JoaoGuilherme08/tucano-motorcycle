@@ -49,6 +49,11 @@ export default function Vehicles() {
     { value: 'touring', label: 'Touring (Viagens Longas)' },
   ];
 
+  // Rolar para o topo quando a página carrega
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
   useEffect(() => {
     fetchVehicles();
   }, [searchParams]);
