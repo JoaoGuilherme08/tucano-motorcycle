@@ -29,6 +29,9 @@ export default function VehicleDetails() {
   const [relatedVehicles, setRelatedVehicles] = useState([]);
 
   useEffect(() => {
+    // Scroll para o topo ao carregar a página
+    window.scrollTo(0, 0);
+    
     const fetchVehicle = async () => {
       setLoading(true);
       try {
