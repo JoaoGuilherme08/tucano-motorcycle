@@ -14,9 +14,11 @@ export default function Home() {
     const fetchFeatured = async () => {
       try {
         const response = await vehicleService.getFeatured();
-        setFeaturedVehicles(response.data.slice(0, 6));
+        const data = Array.isArray(response.data) ? response.data : [];
+        setFeaturedVehicles(data.slice(0, 6));
       } catch (error) {
         console.error('Erro ao carregar destaques:', error);
+        setFeaturedVehicles([]);
       } finally {
         setLoading(false);
       }

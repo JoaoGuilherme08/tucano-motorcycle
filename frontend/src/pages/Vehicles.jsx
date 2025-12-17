@@ -58,9 +58,11 @@ export default function Vehicles() {
     try {
       const params = Object.fromEntries(searchParams.entries());
       const response = await vehicleService.getAll(params);
-      setVehicles(response.data);
+      const data = Array.isArray(response.data) ? response.data : [];
+      setVehicles(data);
     } catch (error) {
       console.error('Erro ao carregar veículos:', error);
+      setVehicles([]);
     } finally {
       setLoading(false);
     }
