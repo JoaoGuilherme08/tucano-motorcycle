@@ -4,10 +4,10 @@ import multer from 'multer';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
-import Database from 'better-sqlite3';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import db, { isPostgres } from './db.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -72,68 +72,111 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(uploadsDir));
 
+// Criar tabelas (compatível com SQLite e PostgreSQL)
+const initDatabase = async () => {
+  if (isPostgres) {
+    // PostgreSQL - usar tipos compatíveis
+    await db.exec(`
+      CREATE TABLE IF NOT EXISTS users (
+        id VARCHAR(255) PRIMARY KEY,
+        username VARCHAR(255) UNIQUE NOT NULL,
+        password VARCHAR(255) NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS vehicles (
+        id VARCHAR(255) PRIMARY KEY,
+        model VARCHAR(255) NOT NULL,
+        brand VARCHAR(255) DEFAULT 'Harley-Davidson',
+        category VARCHAR(255) DEFAULT 'custom',
+        year INTEGER NOT NULL,
+        mileage INTEGER NOT NULL,
+        price DECIMAL(10,2) NOT NULL,
+        description TEXT,
+        type VARCHAR(50) DEFAULT 'moto',
+        featured INTEGER DEFAULT 0,
+        sold INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS vehicle_images (
+        id VARCHAR(255) PRIMARY KEY,
+        vehicle_id VARCHAR(255) NOT NULL,
+        filename VARCHAR(255) NOT NULL,
+        is_primary INTEGER DEFAULT 0,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
+      );
+    `);
+  } else {
+    // SQLite
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS users (
+        id TEXT PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS vehicles (
+        id TEXT PRIMARY KEY,
+        model TEXT NOT NULL,
+        brand TEXT DEFAULT 'Harley-Davidson',
+        category TEXT DEFAULT 'custom',
+        year INTEGER NOT NULL,
+        mileage INTEGER NOT NULL,
+        price REAL NOT NULL,
+        description TEXT,
+        type TEXT DEFAULT 'moto',
+        featured INTEGER DEFAULT 0,
+        sold INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS vehicle_images (
+        id TEXT PRIMARY KEY,
+        vehicle_id TEXT NOT NULL,
+        filename TEXT NOT NULL,
+        is_primary INTEGER DEFAULT 0,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
+      );
+    `);
+  }
+};
+
 // Inicializar banco de dados
-const db = new Database(path.join(__dirname, 'database.sqlite'));
+await initDatabase();
 
-// Criar tabelas
-db.exec(`
-  CREATE TABLE IF NOT EXISTS users (
-    id TEXT PRIMARY KEY,
-    username TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS vehicles (
-    id TEXT PRIMARY KEY,
-    model TEXT NOT NULL,
-    brand TEXT DEFAULT 'Harley-Davidson',
-    category TEXT DEFAULT 'custom',
-    year INTEGER NOT NULL,
-    mileage INTEGER NOT NULL,
-    price REAL NOT NULL,
-    description TEXT,
-    type TEXT DEFAULT 'moto',
-    featured INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-  );
-
-  CREATE TABLE IF NOT EXISTS vehicle_images (
-    id TEXT PRIMARY KEY,
-    vehicle_id TEXT NOT NULL,
-    filename TEXT NOT NULL,
-    is_primary INTEGER DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
-  );
-`);
-
-// Migração: adicionar colunas brand e category se não existirem
-try {
-  db.exec(`ALTER TABLE vehicles ADD COLUMN brand TEXT DEFAULT 'Harley-Davidson'`);
-} catch (e) {
-  // Coluna já existe
-}
-try {
-  db.exec(`ALTER TABLE vehicles ADD COLUMN category TEXT DEFAULT 'custom'`);
-} catch (e) {
-  // Coluna já existe
-}
-try {
-  db.exec(`ALTER TABLE vehicles ADD COLUMN sold INTEGER DEFAULT 0`);
-} catch (e) {
-  // Coluna já existe
+// Migração: adicionar colunas brand, category e sold se não existirem (apenas SQLite)
+if (!isPostgres) {
+  try {
+    db.exec(`ALTER TABLE vehicles ADD COLUMN brand TEXT DEFAULT 'Harley-Davidson'`);
+  } catch (e) {
+    // Coluna já existe
+  }
+  try {
+    db.exec(`ALTER TABLE vehicles ADD COLUMN category TEXT DEFAULT 'custom'`);
+  } catch (e) {
+    // Coluna já existe
+  }
+  try {
+    db.exec(`ALTER TABLE vehicles ADD COLUMN sold INTEGER DEFAULT 0`);
+  } catch (e) {
+    // Coluna já existe
+  }
 }
 
 // Criar usuário admin padrão se não existir
-const adminExists = db.prepare('SELECT * FROM users WHERE username = ?').get('tucanoadmin');
+const adminExists = await db.prepare('SELECT * FROM users WHERE username = ?').get('tucanoadmin');
 if (!adminExists) {
   // Remover usuário admin antigo se existir
-  db.prepare('DELETE FROM users WHERE username = ?').run('admin');
+  await db.prepare('DELETE FROM users WHERE username = ?').run('admin');
   
   const hashedPassword = bcrypt.hashSync('tucano22131h', 10);
-  db.prepare('INSERT INTO users (id, username, password) VALUES (?, ?, ?)').run(
+  await db.prepare('INSERT INTO users (id, username, password) VALUES (?, ?, ?)').run(
     uuidv4(),
     'tucanoadmin',
     hashedPassword
@@ -157,10 +200,10 @@ const authenticate = (req, res, next) => {
 };
 
 // Rotas de autenticação
-app.post('/api/auth/login', (req, res) => {
+app.post('/api/auth/login', async (req, res) => {
   const { username, password } = req.body;
   
-  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username);
+  const user = await db.prepare('SELECT * FROM users WHERE username = ?').get(username);
   
   if (!user || !bcrypt.compareSync(password, user.password)) {
     return res.status(401).json({ error: 'Credenciais inválidas' });
@@ -178,7 +221,7 @@ app.get('/api/auth/verify', authenticate, (req, res) => {
 });
 
 // Rotas de veículos
-app.get('/api/vehicles', (req, res) => {
+app.get('/api/vehicles', async (req, res) => {
   const { model, brand, category, year, minPrice, maxPrice, minMileage, maxMileage, type, sort, featured, sold } = req.query;
   
   let query = 'SELECT * FROM vehicles WHERE 1=1';
@@ -269,30 +312,30 @@ app.get('/api/vehicles', (req, res) => {
       query += ' ORDER BY created_at DESC';
   }
   
-  const vehicles = db.prepare(query).all(...params);
+  const vehicles = await db.prepare(query).all(...params);
   
   // Buscar imagens para cada veículo
-  const vehiclesWithImages = vehicles.map(vehicle => {
-    const images = db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(vehicle.id);
+  const vehiclesWithImages = await Promise.all(vehicles.map(async (vehicle) => {
+    const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(vehicle.id);
     return { ...vehicle, images };
-  });
+  }));
   
   res.json(vehiclesWithImages);
 });
 
-app.get('/api/vehicles/:id', (req, res) => {
-  const vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
+app.get('/api/vehicles/:id', async (req, res) => {
+  const vehicle = await db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
   
   if (!vehicle) {
     return res.status(404).json({ error: 'Veículo não encontrado' });
   }
   
-  const images = db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(vehicle.id);
+  const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(vehicle.id);
   
   res.json({ ...vehicle, images });
 });
 
-app.post('/api/vehicles', authenticate, upload.array('images', 10), (req, res) => {
+app.post('/api/vehicles', authenticate, upload.array('images', 10), async (req, res) => {
   const { model, brand, category, year, mileage, price, description, type, featured, sold } = req.body;
   const vehicleId = uuidv4();
   
@@ -303,33 +346,33 @@ app.post('/api/vehicles', authenticate, upload.array('images', 10), (req, res) =
   const soldValue = (soldStr === 'true' || soldStr === '1' || sold === true || sold === 1) ? 1 : 0;
   console.log('POST /api/vehicles - soldValue:', soldValue, 'from sold:', sold, 'soldStr:', soldStr);
   
-  db.prepare(`
+  await db.prepare(`
     INSERT INTO vehicles (id, model, brand, category, year, mileage, price, description, type, featured, sold)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(vehicleId, model, brand || 'Harley-Davidson', category || 'custom', parseInt(year), parseInt(mileage), parseFloat(price), description, type || 'moto', featured === 'true' ? 1 : 0, soldValue);
   
   // Salvar imagens
   if (req.files && req.files.length > 0) {
-    req.files.forEach((file, index) => {
-      db.prepare(`
+    await Promise.all(req.files.map(async (file, index) => {
+      await db.prepare(`
         INSERT INTO vehicle_images (id, vehicle_id, filename, is_primary)
         VALUES (?, ?, ?, ?)
       `).run(uuidv4(), vehicleId, file.filename, index === 0 ? 1 : 0);
-    });
+    }));
   }
   
-  const vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(vehicleId);
-  const images = db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(vehicleId);
+  const vehicle = await db.prepare('SELECT * FROM vehicles WHERE id = ?').get(vehicleId);
+  const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(vehicleId);
   
   res.status(201).json({ ...vehicle, images });
 });
 
-app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), (req, res) => {
+app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), async (req, res) => {
   const { model, brand, category, year, mileage, price, description, type, featured, sold, removeImages } = req.body;
   
   console.log('PUT /api/vehicles/:id - sold value:', sold, 'type:', typeof sold, 'req.body:', JSON.stringify(req.body));
   
-  const existing = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
+  const existing = await db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
   if (!existing) {
     return res.status(404).json({ error: 'Veículo não encontrado' });
   }
@@ -340,7 +383,7 @@ app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), (req, res
   const soldValue = (soldStr === 'true' || soldStr === '1' || sold === true || sold === 1) ? 1 : 0;
   console.log('PUT /api/vehicles/:id - soldValue:', soldValue, 'from sold:', sold, 'soldStr:', soldStr);
   
-  db.prepare(`
+  await db.prepare(`
     UPDATE vehicles SET 
       model = ?, brand = ?, category = ?, year = ?, mileage = ?, price = ?, description = ?, type = ?, featured = ?, sold = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
@@ -349,44 +392,44 @@ app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), (req, res
   // Remover imagens selecionadas
   if (removeImages) {
     const imagesToRemove = JSON.parse(removeImages);
-    imagesToRemove.forEach(imageId => {
-      const image = db.prepare('SELECT * FROM vehicle_images WHERE id = ?').get(imageId);
+    await Promise.all(imagesToRemove.map(async (imageId) => {
+      const image = await db.prepare('SELECT * FROM vehicle_images WHERE id = ?').get(imageId);
       if (image) {
         const imagePath = path.join(uploadsDir, image.filename);
         if (fs.existsSync(imagePath)) {
           fs.unlinkSync(imagePath);
         }
-        db.prepare('DELETE FROM vehicle_images WHERE id = ?').run(imageId);
+        await db.prepare('DELETE FROM vehicle_images WHERE id = ?').run(imageId);
       }
-    });
+    }));
   }
   
   // Adicionar novas imagens
   if (req.files && req.files.length > 0) {
-    const existingImages = db.prepare('SELECT COUNT(*) as count FROM vehicle_images WHERE vehicle_id = ?').get(req.params.id);
-    req.files.forEach((file, index) => {
-      db.prepare(`
+    const existingImages = await db.prepare('SELECT COUNT(*) as count FROM vehicle_images WHERE vehicle_id = ?').get(req.params.id);
+    await Promise.all(req.files.map(async (file, index) => {
+      await db.prepare(`
         INSERT INTO vehicle_images (id, vehicle_id, filename, is_primary)
         VALUES (?, ?, ?, ?)
       `).run(uuidv4(), req.params.id, file.filename, existingImages.count === 0 && index === 0 ? 1 : 0);
-    });
+    }));
   }
   
-  const vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
-  const images = db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(req.params.id);
+  const vehicle = await db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
+  const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(req.params.id);
   
   res.json({ ...vehicle, images });
 });
 
-app.delete('/api/vehicles/:id', authenticate, (req, res) => {
-  const vehicle = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
+app.delete('/api/vehicles/:id', authenticate, async (req, res) => {
+  const vehicle = await db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
   
   if (!vehicle) {
     return res.status(404).json({ error: 'Veículo não encontrado' });
   }
   
   // Remover imagens do disco
-  const images = db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(req.params.id);
+  const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(req.params.id);
   images.forEach(image => {
     const imagePath = path.join(uploadsDir, image.filename);
     if (fs.existsSync(imagePath)) {
@@ -394,8 +437,8 @@ app.delete('/api/vehicles/:id', authenticate, (req, res) => {
     }
   });
   
-  db.prepare('DELETE FROM vehicle_images WHERE vehicle_id = ?').run(req.params.id);
-  db.prepare('DELETE FROM vehicles WHERE id = ?').run(req.params.id);
+  await db.prepare('DELETE FROM vehicle_images WHERE vehicle_id = ?').run(req.params.id);
+  await db.prepare('DELETE FROM vehicles WHERE id = ?').run(req.params.id);
   
   res.json({ message: 'Veículo removido com sucesso' });
 });
@@ -410,13 +453,18 @@ app.post('/api/upload', authenticate, upload.array('images', 10), (req, res) => 
 });
 
 // Estatísticas para o painel admin
-app.get('/api/stats', authenticate, (req, res) => {
-  const totalVehicles = db.prepare('SELECT COUNT(*) as count FROM vehicles').get().count;
-  const totalCars = db.prepare('SELECT COUNT(*) as count FROM vehicles WHERE type = ?').get('car').count;
-  const totalMotos = db.prepare('SELECT COUNT(*) as count FROM vehicles WHERE type = ?').get('moto').count;
-  const featuredCount = db.prepare('SELECT COUNT(*) as count FROM vehicles WHERE featured = 1').get().count;
+app.get('/api/stats', authenticate, async (req, res) => {
+  const totalVehicles = await db.prepare('SELECT COUNT(*) as count FROM vehicles').get();
+  const totalCars = await db.prepare('SELECT COUNT(*) as count FROM vehicles WHERE type = ?').get('car');
+  const totalMotos = await db.prepare('SELECT COUNT(*) as count FROM vehicles WHERE type = ?').get('moto');
+  const featuredCount = await db.prepare('SELECT COUNT(*) as count FROM vehicles WHERE featured = 1').get();
   
-  res.json({ totalVehicles, totalCars, totalMotos, featuredCount });
+  res.json({ 
+    totalVehicles: totalVehicles?.count || 0, 
+    totalCars: totalCars?.count || 0, 
+    totalMotos: totalMotos?.count || 0, 
+    featuredCount: featuredCount?.count || 0 
+  });
 });
 
 app.listen(PORT, () => {
