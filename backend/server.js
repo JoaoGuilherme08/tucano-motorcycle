@@ -74,9 +74,14 @@ app.use('/uploads', express.static(uploadsDir));
 
 // Criar tabelas (compatível com SQLite e PostgreSQL)
 const initDatabase = async () => {
+  console.log('🔧 Inicializando banco de dados...');
+  console.log('isPostgres:', isPostgres);
+  
   if (isPostgres) {
+    console.log('📊 Criando tabelas no PostgreSQL...');
     // PostgreSQL - usar tipos compatíveis
-    await db.exec(`
+    try {
+      await db.exec(`
       CREATE TABLE IF NOT EXISTS users (
         id VARCHAR(255) PRIMARY KEY,
         username VARCHAR(255) UNIQUE NOT NULL,
@@ -109,7 +114,13 @@ const initDatabase = async () => {
         FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
       );
     `);
+      console.log('✅ Tabelas criadas com sucesso no PostgreSQL!');
+    } catch (error) {
+      console.error('❌ Erro ao criar tabelas no PostgreSQL:', error);
+      throw error;
+    }
   } else {
+    console.log('📊 Criando tabelas no SQLite...');
     // SQLite
     db.exec(`
       CREATE TABLE IF NOT EXISTS users (
@@ -144,11 +155,18 @@ const initDatabase = async () => {
         FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
       );
     `);
+    console.log('✅ Tabelas criadas com sucesso no SQLite!');
   }
 };
 
 // Inicializar banco de dados
-await initDatabase();
+try {
+  await initDatabase();
+  console.log('✅ Banco de dados inicializado com sucesso!');
+} catch (error) {
+  console.error('❌ Erro ao inicializar banco de dados:', error);
+  process.exit(1);
+}
 
 // Migração: adicionar colunas brand, category e sold se não existirem (apenas SQLite)
 if (!isPostgres) {
@@ -170,18 +188,25 @@ if (!isPostgres) {
 }
 
 // Criar usuário admin padrão se não existir
-const adminExists = await db.prepare('SELECT * FROM users WHERE username = ?').get('tucanoadmin');
-if (!adminExists) {
-  // Remover usuário admin antigo se existir
-  await db.prepare('DELETE FROM users WHERE username = ?').run('admin');
-  
-  const hashedPassword = bcrypt.hashSync('tucano22131h', 10);
-  await db.prepare('INSERT INTO users (id, username, password) VALUES (?, ?, ?)').run(
-    uuidv4(),
-    'tucanoadmin',
-    hashedPassword
-  );
-  console.log('Usuário admin criado com sucesso');
+try {
+  console.log('👤 Verificando usuário admin...');
+  const adminExists = await db.prepare('SELECT * FROM users WHERE username = ?').get('tucanoadmin');
+  if (!adminExists) {
+    // Remover usuário admin antigo se existir
+    await db.prepare('DELETE FROM users WHERE username = ?').run('admin');
+    
+    const hashedPassword = bcrypt.hashSync('tucano22131h', 10);
+    await db.prepare('INSERT INTO users (id, username, password) VALUES (?, ?, ?)').run(
+      uuidv4(),
+      'tucanoadmin',
+      hashedPassword
+    );
+    console.log('✅ Usuário admin criado com sucesso');
+  } else {
+    console.log('✅ Usuário admin já existe');
+  }
+} catch (error) {
+  console.error('❌ Erro ao criar usuário admin:', error);
 }
 
 // Middleware de autenticação
