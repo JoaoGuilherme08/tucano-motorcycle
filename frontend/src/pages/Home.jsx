@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Shield, Award, Headphones, Car, Bike, ChevronRight } from 'lucide-react';
+import { ArrowRight, Shield, Award, Headphones, Bike } from 'lucide-react';
 import VehicleCard, { VehicleCardSkeleton } from '../components/VehicleCard';
 import { vehicleService } from '../services/api';
 import styles from './Home.module.css';
@@ -114,63 +114,6 @@ export default function Home() {
             <div className={styles.scrollDot}></div>
           </div>
         </motion.div>
-      </section>
-
-      {/* Category Section */}
-      <section className={styles.categories}>
-        <div className="container">
-          <motion.div
-            className={styles.categoryGrid}
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
-            <Link to="/veiculos?brand=Harley-Davidson" className={styles.categoryCard}>
-              <div className={styles.categoryIcon}>
-                <Bike size={40} />
-              </div>
-              <div className={styles.categoryInfo}>
-                <h3>Harley-Davidson</h3>
-                <p>Especialidade da casa</p>
-              </div>
-              <ChevronRight size={24} className={styles.categoryArrow} />
-            </Link>
-            
-            <Link to="/veiculos?category=custom" className={styles.categoryCard}>
-              <div className={styles.categoryIcon}>
-                <Bike size={40} />
-              </div>
-              <div className={styles.categoryInfo}>
-                <h3>Custom</h3>
-                <p>Estilo clássico americano</p>
-              </div>
-              <ChevronRight size={24} className={styles.categoryArrow} />
-            </Link>
-
-            <Link to="/veiculos?category=touring" className={styles.categoryCard}>
-              <div className={styles.categoryIcon}>
-                <Bike size={40} />
-              </div>
-              <div className={styles.categoryInfo}>
-                <h3>Touring</h3>
-                <p>Viagens longas com conforto</p>
-              </div>
-              <ChevronRight size={24} className={styles.categoryArrow} />
-            </Link>
-            
-            <Link to="/veiculos?category=trail" className={styles.categoryCard}>
-              <div className={styles.categoryIcon}>
-                <Bike size={40} />
-              </div>
-              <div className={styles.categoryInfo}>
-                <h3>Trail / Big Trail</h3>
-                <p>Aventura em qualquer terreno</p>
-              </div>
-              <ChevronRight size={24} className={styles.categoryArrow} />
-            </Link>
-          </motion.div>
-        </div>
       </section>
 
       {/* Featured Vehicles */}

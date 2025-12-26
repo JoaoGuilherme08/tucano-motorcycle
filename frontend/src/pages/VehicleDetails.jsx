@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
@@ -9,10 +9,13 @@ import {
   Phone, 
   ChevronLeft, 
   ChevronRight,
+  ChevronDown,
   X,
   Share2,
   Heart,
-  Bike
+  Bike,
+  CheckCircle,
+  MapPin
 } from 'lucide-react';
 import { vehicleService } from '../services/api';
 import styles from './VehicleDetails.module.css';
@@ -27,6 +30,9 @@ export default function VehicleDetails() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showLightbox, setShowLightbox] = useState(false);
   const [relatedVehicles, setRelatedVehicles] = useState([]);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [showExpandButton, setShowExpandButton] = useState(false);
+  const descriptionRef = useRef(null);
 
   useEffect(() => {
     // Scroll para o topo ao carregar a página
@@ -38,9 +44,9 @@ export default function VehicleDetails() {
         const response = await vehicleService.getById(id);
         setVehicle(response.data);
 
-        // Buscar veículos relacionados (mesma categoria ou marca)
-        const related = await vehicleService.getAll({ category: response.data.category });
-        setRelatedVehicles(related.data.filter(v => v.id !== id).slice(0, 3));
+        // Buscar veículos relacionados (mesma categoria ou marca, excluindo vendidas)
+        const related = await vehicleService.getAll({ category: response.data.category, sold: 'false' });
+        setRelatedVehicles(related.data.filter(v => v.id !== id && v.sold !== 1).slice(0, 3));
       } catch (error) {
         console.error('Erro ao carregar veículo:', error);
         navigate('/veiculos');
@@ -50,6 +56,35 @@ export default function VehicleDetails() {
     };
     fetchVehicle();
   }, [id, navigate]);
+
+  // Verificar se a descrição precisa do botão de expandir
+  useEffect(() => {
+    if (vehicle?.description) {
+      // Verificar se o texto é longo o suficiente para precisar de truncamento
+      const charCount = vehicle.description.length;
+      const lineCount = vehicle.description.split('\n').length;
+      const isLongText = charCount > 150 || lineCount > 3;
+      
+      setShowExpandButton(isLongText);
+      
+      // Verificação adicional após renderização para garantir
+      const checkTruncation = () => {
+        if (descriptionRef.current && !isDescriptionExpanded) {
+          const element = descriptionRef.current;
+          const isTextTruncated = element.scrollHeight > element.clientHeight + 10; // Margem de erro
+          if (isTextTruncated) {
+            setShowExpandButton(true);
+          }
+        }
+      };
+      
+      // Verificar após um pequeno delay para garantir que o DOM foi atualizado
+      const timeoutId = setTimeout(checkTruncation, 200);
+      return () => clearTimeout(timeoutId);
+    } else {
+      setShowExpandButton(false);
+    }
+  }, [vehicle?.description, isDescriptionExpanded]);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -95,10 +130,14 @@ export default function VehicleDetails() {
   };
 
   const whatsappMessage = vehicle 
-    ? `Olá! Tenho interesse na moto ${vehicle.model} (${vehicle.year}) anunciada por ${formatPrice(vehicle.price)}. Gostaria de mais informações.`
+    ? vehicle.sold === 1
+      ? `Olá! Gostaria de mais informações sobre motos disponíveis.`
+      : `Olá! Tenho interesse na moto ${vehicle.model} (${vehicle.year}) anunciada por ${formatPrice(vehicle.price)}. Gostaria de mais informações.`
     : '';
 
   const whatsappLink = `https://wa.me/5518996334805?text=${encodeURIComponent(whatsappMessage)}`;
+  const storeAddress = 'Rua Aguapei, 1250, Araçatuba - SP, 16025-295';
+  const googleMapsLink = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(storeAddress)}`;
 
   if (loading) {
     return (
@@ -199,6 +238,39 @@ export default function VehicleDetails() {
                 ))}
               </div>
             )}
+
+            {/* Descrição abaixo das fotos */}
+            {vehicle.description && (
+              <motion.div
+                className={styles.description}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, delay: 0.3 }}
+              >
+                <h3>Descrição</h3>
+                <div className={styles.descriptionContent}>
+                  <p 
+                    ref={descriptionRef}
+                    className={isDescriptionExpanded ? styles.expanded : styles.collapsed}
+                  >
+                    {vehicle.description}
+                  </p>
+                  {(showExpandButton || (vehicle.description && (vehicle.description.length > 150 || vehicle.description.split('\n').length > 3))) && (
+                    <button
+                      className={styles.expandBtn}
+                      onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                    >
+                      {isDescriptionExpanded ? 'Mostrar menos' : 'Leia a descrição completa'}
+                      {isDescriptionExpanded ? (
+                        <ChevronDown size={16} className={styles.expandIcon} />
+                      ) : (
+                        <ChevronRight size={16} className={styles.expandIcon} />
+                      )}
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
           </motion.div>
 
           {/* Info */}
@@ -212,7 +284,13 @@ export default function VehicleDetails() {
           <div className={styles.typeBadge}>
             {vehicle.brand || 'Moto'}
           </div>
-              {vehicle.featured === 1 && (
+              {vehicle.sold === 1 && (
+                <div className={styles.soldBadge}>
+                  <CheckCircle size={16} />
+                  <span>Vendida</span>
+                </div>
+              )}
+              {vehicle.featured === 1 && !vehicle.sold && (
                 <div className={styles.featuredBadge}>Destaque</div>
               )}
             </div>
@@ -243,33 +321,49 @@ export default function VehicleDetails() {
               </div>
             </div>
 
-            <div className={styles.priceSection}>
-              <span className={styles.priceLabel}>Valor</span>
-              <span className={styles.price}>{formatPrice(vehicle.price)}</span>
-            </div>
-
-            {vehicle.description && (
-              <div className={styles.description}>
-                <h3>Descrição</h3>
-                <p>{vehicle.description}</p>
+            {vehicle.sold !== 1 && (
+              <div className={styles.priceSection}>
+                <span className={styles.priceLabel}>Valor</span>
+                <span className={styles.price}>{formatPrice(vehicle.price)}</span>
+              </div>
+            )}
+            
+            {vehicle.sold === 1 && (
+              <div className={styles.soldSection}>
+                <CheckCircle size={24} />
+                <div>
+                  <span className={styles.soldLabel}>Status</span>
+                  <span className={styles.soldValue}>Vendida</span>
+                </div>
               </div>
             )}
 
-            <div className={styles.actions}>
-              <a
-                href={whatsappLink}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn btn-primary"
-              >
-                <MessageCircle size={20} />
-                Chamar no WhatsApp
-              </a>
-              <a href="tel:+5518996334805" className="btn btn-secondary">
-                <Phone size={20} />
-                Ligar
-              </a>
-            </div>
+            {vehicle.sold !== 1 && (
+              <div className={styles.actions}>
+                <a
+                  href={whatsappLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary"
+                >
+                  <MessageCircle size={20} />
+                  Chamar no WhatsApp
+                </a>
+                <a href="tel:+5518996334805" className="btn btn-secondary">
+                  <Phone size={20} />
+                  Ligar
+                </a>
+                <a
+                  href={googleMapsLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-outline"
+                >
+                  <MapPin size={20} />
+                  Localização
+                </a>
+              </div>
+            )}
 
             <div className={styles.secondaryActions}>
               <button className={styles.iconBtn} onClick={handleShare}>
@@ -308,7 +402,11 @@ export default function VehicleDetails() {
                   <div className={styles.relatedInfo}>
                     <h4>{v.model}</h4>
                     <p>{v.year} • {formatMileage(v.mileage)} km</p>
-                    <span className={styles.relatedPrice}>{formatPrice(v.price)}</span>
+                    {v.sold !== 1 ? (
+                      <span className={styles.relatedPrice}>{formatPrice(v.price)}</span>
+                    ) : (
+                      <span className={styles.relatedSold}>Vendida</span>
+                    )}
                   </div>
                 </Link>
               ))}

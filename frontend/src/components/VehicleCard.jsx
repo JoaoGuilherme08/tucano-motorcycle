@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Gauge, Calendar, ArrowRight, Star } from 'lucide-react';
+import { Gauge, Calendar, ArrowRight, Star, CheckCircle } from 'lucide-react';
 import styles from './VehicleCard.module.css';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
@@ -29,9 +29,14 @@ export default function VehicleCard({ vehicle, index = 0 }) {
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={{ y: -8 }}
+      whileHover={vehicle.sold !== 1 ? { y: -8 } : {}}
     >
-      <Link to={`/veiculo/${vehicle.id}`} className={styles.cardLink}>
+      <Link 
+        to={vehicle.sold === 1 ? '#' : `/veiculo/${vehicle.id}`} 
+        className={styles.cardLink}
+        onClick={vehicle.sold === 1 ? (e) => e.preventDefault() : undefined}
+        style={vehicle.sold === 1 ? { cursor: 'default', opacity: 0.8 } : {}}
+      >
         <div className={styles.imageWrapper}>
           <img
             src={imageUrl}
@@ -41,7 +46,14 @@ export default function VehicleCard({ vehicle, index = 0 }) {
           />
           <div className={styles.imageOverlay}></div>
           
-          {vehicle.featured === 1 && (
+          {vehicle.sold === 1 && (
+            <div className={styles.soldBadge}>
+              <CheckCircle size={16} />
+              <span>Vendida</span>
+            </div>
+          )}
+          
+          {vehicle.featured === 1 && !vehicle.sold && (
             <div className={styles.featuredBadge}>
               <Star size={12} />
               <span>Destaque</span>
@@ -68,15 +80,24 @@ export default function VehicleCard({ vehicle, index = 0 }) {
           </div>
 
           <div className={styles.footer}>
-            <div className={styles.price}>
-              <span className={styles.priceLabel}>Preço</span>
-              <span className={styles.priceValue}>{formatPrice(vehicle.price)}</span>
-            </div>
+            {vehicle.sold !== 1 && (
+              <div className={styles.price}>
+                <span className={styles.priceLabel}>Preço</span>
+                <span className={styles.priceValue}>{formatPrice(vehicle.price)}</span>
+              </div>
+            )}
             
-            <div className={styles.cta}>
-              <span>Ver detalhes</span>
-              <ArrowRight size={18} />
-            </div>
+            {vehicle.sold === 1 ? (
+              <div className={styles.soldMessage}>
+                <CheckCircle size={18} />
+                <span>Vendida</span>
+              </div>
+            ) : (
+              <div className={styles.cta}>
+                <span>Ver detalhes</span>
+                <ArrowRight size={18} />
+              </div>
+            )}
           </div>
         </div>
       </Link>

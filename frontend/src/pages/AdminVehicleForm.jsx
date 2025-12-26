@@ -10,7 +10,8 @@ import {
   Bike, 
   ImagePlus,
   Star,
-  Loader2
+  Loader2,
+  CheckCircle
 } from 'lucide-react';
 import { vehicleService } from '../services/api';
 
@@ -33,6 +34,7 @@ export default function AdminVehicleForm() {
     description: '',
     type: 'moto',
     featured: false,
+    sold: false,
   });
 
   const brandOptions = [
@@ -88,6 +90,7 @@ export default function AdminVehicleForm() {
         description: vehicle.description || '',
         type: vehicle.type || 'moto',
         featured: vehicle.featured === 1,
+        sold: vehicle.sold === 1,
       });
       setExistingImages(vehicle.images || []);
     } catch (error) {
@@ -160,7 +163,11 @@ export default function AdminVehicleForm() {
       data.append('price', formData.price);
       data.append('description', formData.description);
       data.append('type', formData.type);
-      data.append('featured', formData.featured);
+      data.append('featured', formData.featured ? 'true' : 'false');
+      data.append('sold', formData.sold ? 'true' : 'false');
+      
+      console.log('FormData - sold value:', formData.sold, 'sending as:', formData.sold ? 'true' : 'false');
+      console.log('FormData - featured value:', formData.featured, 'sending as:', formData.featured ? 'true' : 'false');
 
       images.forEach(img => {
         data.append('images', img.file);
@@ -360,7 +367,7 @@ export default function AdminVehicleForm() {
               />
             </div>
 
-            {/* Destaque */}
+            {/* Destaque e Vendida */}
             <div className={styles.checkboxGroup}>
               <label className={styles.checkbox}>
                 <input
@@ -373,6 +380,19 @@ export default function AdminVehicleForm() {
                   <Star size={14} />
                 </span>
                 <span>Marcar como destaque na página inicial</span>
+              </label>
+              
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  name="sold"
+                  checked={formData.sold}
+                  onChange={handleChange}
+                />
+                <span className={styles.checkmark}>
+                  <CheckCircle size={14} />
+                </span>
+                <span>Marcar como vendida</span>
               </label>
             </div>
 

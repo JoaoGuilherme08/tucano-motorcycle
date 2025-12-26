@@ -147,6 +147,9 @@
 }
 
 .checkboxGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   padding: 20px;
   background: var(--color-gray-dark);
   border-radius: var(--border-radius-md);

@@ -10,7 +10,8 @@ import {
   Eye, 
   Star, 
   MoreVertical,
-  AlertTriangle
+  AlertTriangle,
+  CheckCircle
 } from 'lucide-react';
 import { vehicleService } from '../services/api';
 
@@ -31,7 +32,8 @@ export default function AdminVehicles() {
   const fetchVehicles = async () => {
     setLoading(true);
     try {
-      const response = await vehicleService.getAll();
+      // Buscar todas as motos, incluindo vendidas (usando 'all' para ignorar filtro)
+      const response = await vehicleService.getAll({ sold: 'all' });
       setVehicles(response.data);
     } catch (error) {
       console.error('Erro ao carregar veículos:', error);
@@ -182,16 +184,31 @@ export default function AdminVehicles() {
                       </td>
                       <td>{vehicle.year}</td>
                       <td>{formatMileage(vehicle.mileage)} km</td>
-                      <td className={styles.priceCell}>{formatPrice(vehicle.price)}</td>
-                      <td>
-                        {vehicle.featured === 1 ? (
-                          <span className={`${styles.badge} ${styles.featured}`}>
-                            <Star size={12} />
-                            Destaque
-                          </span>
+                      <td className={styles.priceCell}>
+                        {vehicle.sold === 1 ? (
+                          <span style={{ color: '#10b981', fontStyle: 'italic' }}>Vendida</span>
                         ) : (
-                          <span className={styles.badge}>Normal</span>
+                          formatPrice(vehicle.price)
                         )}
+                      </td>
+                      <td>
+                        <div className={styles.statusBadges}>
+                          {vehicle.sold === 1 && (
+                            <span className={`${styles.badge} ${styles.sold}`}>
+                              <CheckCircle size={12} />
+                              Vendida
+                            </span>
+                          )}
+                          {vehicle.featured === 1 && (
+                            <span className={`${styles.badge} ${styles.featured}`}>
+                              <Star size={12} />
+                              Destaque
+                            </span>
+                          )}
+                          {vehicle.sold !== 1 && vehicle.featured !== 1 && (
+                            <span className={styles.badge}>Normal</span>
+                          )}
+                        </div>
                       </td>
                       <td>
                         <div className={styles.actions}>
@@ -253,7 +270,22 @@ export default function AdminVehicles() {
                   <div className={styles.mobileCardInfo}>
                     <h3>{vehicle.model}</h3>
                     <p>{vehicle.year} • {formatMileage(vehicle.mileage)} km</p>
-                    <span className={styles.mobileCardPrice}>{formatPrice(vehicle.price)}</span>
+                    {vehicle.sold === 1 ? (
+                      <span className={styles.mobileCardSold}>
+                        <CheckCircle size={14} />
+                        Vendida
+                      </span>
+                    ) : (
+                      <span className={styles.mobileCardPrice}>{formatPrice(vehicle.price)}</span>
+                    )}
+                    <div className={styles.mobileCardBadges}>
+                      {vehicle.featured === 1 && (
+                        <span className={`${styles.mobileBadge} ${styles.featured}`}>
+                          <Star size={12} />
+                          Destaque
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className={styles.mobileCardActions}>

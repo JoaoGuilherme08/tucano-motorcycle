@@ -11,6 +11,7 @@ import AdminVehicles from './pages/AdminVehicles';
 import AdminVehicleForm from './pages/AdminVehicleForm';
 import ProtectedRoute from './components/ProtectedRoute';
 import Events from './pages/Events';
+import SoldVehicles from './pages/SoldVehicles';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/veiculos" element={<Vehicles />} />
             <Route path="/eventos" element={<Events />} />
+            <Route path="/vendidas" element={<SoldVehicles />} />
             <Route path="/veiculo/:id" element={<VehicleDetails />} />
             <Route path="/login" element={<Login />} />
             <Route

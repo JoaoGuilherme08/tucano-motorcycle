@@ -41,7 +41,7 @@ export const vehicleService = {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
   delete: (id) => api.delete(`/vehicles/${id}`),
-  getFeatured: () => api.get('/vehicles', { params: { featured: 'true' } }),
+  getFeatured: () => api.get('/vehicles', { params: { featured: 'true', sold: 'false' } }),
 };
 
 export const statsService = {

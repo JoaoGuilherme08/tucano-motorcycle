@@ -218,6 +218,17 @@
   color: var(--color-orange);
 }
 
+.badge.sold {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.statusBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .actions {
   display: flex;
   gap: 8px;
@@ -305,6 +316,42 @@
   font-family: 'Space Grotesk', sans-serif;
   font-size: 16px;
   font-weight: 600;
+  color: var(--color-orange);
+}
+
+.mobileCardSold {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #10b981;
+  margin-top: 4px;
+}
+
+.mobileCardBadges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.mobileBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 12px;
+  background: var(--color-gray);
+  color: var(--color-gray-text);
+}
+
+.mobileBadge.featured {
+  background: rgba(255, 106, 0, 0.15);
   color: var(--color-orange);
 }
 

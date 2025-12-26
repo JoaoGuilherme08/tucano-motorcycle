@@ -33,6 +33,7 @@ export default function Header() {
     { path: '/', label: 'Início' },
     { path: '/veiculos', label: 'Veículos' },
     { path: '/eventos', label: 'Eventos' },
+    { path: '/vendidas', label: 'Motos Vendidas' },
   ];
 
   return (

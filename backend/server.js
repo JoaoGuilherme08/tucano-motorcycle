@@ -69,6 +69,7 @@ const upload = multer({
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(uploadsDir));
 
 // Inicializar banco de dados
@@ -116,6 +117,11 @@ try {
 }
 try {
   db.exec(`ALTER TABLE vehicles ADD COLUMN category TEXT DEFAULT 'custom'`);
+} catch (e) {
+  // Coluna já existe
+}
+try {
+  db.exec(`ALTER TABLE vehicles ADD COLUMN sold INTEGER DEFAULT 0`);
 } catch (e) {
   // Coluna já existe
 }
@@ -173,10 +179,37 @@ app.get('/api/auth/verify', authenticate, (req, res) => {
 
 // Rotas de veículos
 app.get('/api/vehicles', (req, res) => {
-  const { model, brand, category, year, minPrice, maxPrice, minMileage, maxMileage, type, sort, featured } = req.query;
+  const { model, brand, category, year, minPrice, maxPrice, minMileage, maxMileage, type, sort, featured, sold } = req.query;
   
   let query = 'SELECT * FROM vehicles WHERE 1=1';
   const params = [];
+  
+  // Filtrar por vendida ou não vendida
+  console.log('GET /api/vehicles - sold query param:', sold, 'type:', typeof sold);
+  if (sold !== undefined && sold !== null && sold !== '') {
+    const soldParam = String(sold).toLowerCase().trim();
+    if (soldParam === 'all') {
+      // Quando 'all', mostrar todas (incluindo vendidas) - usado no admin
+      // Não adiciona filtro de sold
+      console.log('GET /api/vehicles - Showing all vehicles (including sold)');
+    } else if (soldParam === 'true' || soldParam === '1') {
+      // Quando solicitado explicitamente, mostrar apenas vendidas
+      query += ' AND sold = 1';
+      console.log('GET /api/vehicles - Filtering for sold vehicles (sold = 1)');
+    } else if (soldParam === 'false' || soldParam === '0') {
+      // Quando explicitamente false, excluir vendidas
+      query += ' AND (sold = 0 OR sold IS NULL)';
+      console.log('GET /api/vehicles - Filtering out sold vehicles (sold = 0 OR NULL)');
+    } else {
+      // Qualquer outro valor, excluir vendidas por padrão
+      query += ' AND (sold = 0 OR sold IS NULL)';
+      console.log('GET /api/vehicles - Unknown sold param, filtering out sold vehicles');
+    }
+  } else {
+    // Por padrão (quando sold não é passado), excluir vendidas das buscas normais
+    query += ' AND (sold = 0 OR sold IS NULL)';
+    console.log('GET /api/vehicles - Default: Filtering out sold vehicles (sold = 0 OR NULL)');
+  }
   
   if (model) {
     query += ' AND model LIKE ?';
@@ -260,13 +293,20 @@ app.get('/api/vehicles/:id', (req, res) => {
 });
 
 app.post('/api/vehicles', authenticate, upload.array('images', 10), (req, res) => {
-  const { model, brand, category, year, mileage, price, description, type, featured } = req.body;
+  const { model, brand, category, year, mileage, price, description, type, featured, sold } = req.body;
   const vehicleId = uuidv4();
   
+  console.log('POST /api/vehicles - sold value:', sold, 'type:', typeof sold, 'req.body:', JSON.stringify(req.body));
+  // Verificar se sold é 'true' (string) ou true (boolean) ou '1' (string)
+  // Converter para string e fazer lowercase para garantir compatibilidade
+  const soldStr = String(sold || '').toLowerCase().trim();
+  const soldValue = (soldStr === 'true' || soldStr === '1' || sold === true || sold === 1) ? 1 : 0;
+  console.log('POST /api/vehicles - soldValue:', soldValue, 'from sold:', sold, 'soldStr:', soldStr);
+  
   db.prepare(`
-    INSERT INTO vehicles (id, model, brand, category, year, mileage, price, description, type, featured)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(vehicleId, model, brand || 'Harley-Davidson', category || 'custom', parseInt(year), parseInt(mileage), parseFloat(price), description, type || 'moto', featured === 'true' ? 1 : 0);
+    INSERT INTO vehicles (id, model, brand, category, year, mileage, price, description, type, featured, sold)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(vehicleId, model, brand || 'Harley-Davidson', category || 'custom', parseInt(year), parseInt(mileage), parseFloat(price), description, type || 'moto', featured === 'true' ? 1 : 0, soldValue);
   
   // Salvar imagens
   if (req.files && req.files.length > 0) {
@@ -285,18 +325,26 @@ app.post('/api/vehicles', authenticate, upload.array('images', 10), (req, res) =
 });
 
 app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), (req, res) => {
-  const { model, brand, category, year, mileage, price, description, type, featured, removeImages } = req.body;
+  const { model, brand, category, year, mileage, price, description, type, featured, sold, removeImages } = req.body;
+  
+  console.log('PUT /api/vehicles/:id - sold value:', sold, 'type:', typeof sold, 'req.body:', JSON.stringify(req.body));
   
   const existing = db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
   if (!existing) {
     return res.status(404).json({ error: 'Veículo não encontrado' });
   }
   
+  // Verificar se sold é 'true' (string) ou true (boolean) ou '1' (string)
+  // Converter para string e fazer lowercase para garantir compatibilidade
+  const soldStr = String(sold || '').toLowerCase().trim();
+  const soldValue = (soldStr === 'true' || soldStr === '1' || sold === true || sold === 1) ? 1 : 0;
+  console.log('PUT /api/vehicles/:id - soldValue:', soldValue, 'from sold:', sold, 'soldStr:', soldStr);
+  
   db.prepare(`
     UPDATE vehicles SET 
-      model = ?, brand = ?, category = ?, year = ?, mileage = ?, price = ?, description = ?, type = ?, featured = ?, updated_at = CURRENT_TIMESTAMP
+      model = ?, brand = ?, category = ?, year = ?, mileage = ?, price = ?, description = ?, type = ?, featured = ?, sold = ?, updated_at = CURRENT_TIMESTAMP
     WHERE id = ?
-  `).run(model, brand || 'Harley-Davidson', category || 'custom', parseInt(year), parseInt(mileage), parseFloat(price), description, type || 'moto', featured === 'true' ? 1 : 0, req.params.id);
+  `).run(model, brand || 'Harley-Davidson', category || 'custom', parseInt(year), parseInt(mileage), parseFloat(price), description, type || 'moto', featured === 'true' ? 1 : 0, soldValue, req.params.id);
   
   // Remover imagens selecionadas
   if (removeImages) {
