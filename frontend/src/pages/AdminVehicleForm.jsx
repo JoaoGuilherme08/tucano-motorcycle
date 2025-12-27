@@ -227,22 +227,6 @@ export default function AdminVehicleForm() {
     }
   };
 
-  // Preparar lista de imagens
-  const allImagesRaw = [
-    ...existingImages.map(img => ({ 
-      type: 'existing', 
-      id: img.id, 
-      url: getImageUrl(img.filename),
-      isPrimary: img.is_primary === 1
-    })),
-    ...images.map((img, i) => ({ 
-      type: 'new', 
-      index: i, 
-      url: img.preview,
-      isPrimary: false
-    })),
-  ];
-
   // Se não houver imagem principal definida, usar a primeira existente com is_primary ou a primeira da lista
   useEffect(() => {
     if (!primaryImageId) {
@@ -257,9 +241,25 @@ export default function AdminVehicleForm() {
 
   // Reordenar imagens para que a principal fique primeiro
   const allImages = useMemo(() => {
-    if (!primaryImageId) return allImagesRaw;
+    // Preparar lista de imagens
+    const imagesList = [
+      ...existingImages.map(img => ({ 
+        type: 'existing', 
+        id: img.id, 
+        url: getImageUrl(img.filename),
+        isPrimary: img.is_primary === 1
+      })),
+      ...images.map((img, i) => ({ 
+        type: 'new', 
+        index: i, 
+        url: img.preview,
+        isPrimary: false
+      })),
+    ];
+
+    if (!primaryImageId || imagesList.length === 0) return imagesList;
     
-    const primaryIndex = allImagesRaw.findIndex(img => {
+    const primaryIndex = imagesList.findIndex(img => {
       if (img.type === 'existing') {
         return img.id === primaryImageId;
       } else {
@@ -268,12 +268,12 @@ export default function AdminVehicleForm() {
     });
 
     if (primaryIndex > 0) {
-      const reordered = [...allImagesRaw];
+      const reordered = [...imagesList];
       const [primaryImg] = reordered.splice(primaryIndex, 1);
       return [primaryImg, ...reordered];
     }
-    return allImagesRaw;
-  }, [allImagesRaw, primaryImageId]);
+    return imagesList;
+  }, [existingImages, images, primaryImageId]);
 
   if (fetchingData) {
     return (

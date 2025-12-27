@@ -14,8 +14,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { vehicleService } from '../services/api';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || '${API_BASE_URL}';
+import { getImageUrl } from '../utils/imageUtils';
 import styles from './AdminVehicles.module.css';
 
 export default function AdminVehicles() {

@@ -49,7 +49,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Servir uploads locais apenas se não estiver usando Cloudinary
 if (!process.env.CLOUDINARY_CLOUD_NAME) {
-  app.use('/uploads', express.static(uploadsDir));
+app.use('/uploads', express.static(uploadsDir));
 }
 
 // Criar tabelas (compatível com SQLite e PostgreSQL)
@@ -503,8 +503,8 @@ app.post('/api/upload', authenticate, upload.array('images', 10), async (req, re
     const files = uploadedImages.map(image => ({
       filename: image.filename,
       url: image.url
-    }));
-    res.json(files);
+  }));
+  res.json(files);
   } catch (error) {
     console.error('Erro ao fazer upload:', error);
     res.status(500).json({ error: 'Erro ao fazer upload das imagens' });
