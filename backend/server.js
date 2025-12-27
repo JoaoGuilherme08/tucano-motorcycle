@@ -122,39 +122,39 @@ const initDatabase = async () => {
   } else {
     console.log('📊 Criando tabelas no SQLite...');
     // SQLite
-    db.exec(`
-      CREATE TABLE IF NOT EXISTS users (
-        id TEXT PRIMARY KEY,
-        username TEXT UNIQUE NOT NULL,
-        password TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
+db.exec(`
+  CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 
-      CREATE TABLE IF NOT EXISTS vehicles (
-        id TEXT PRIMARY KEY,
-        model TEXT NOT NULL,
+  CREATE TABLE IF NOT EXISTS vehicles (
+    id TEXT PRIMARY KEY,
+    model TEXT NOT NULL,
         brand TEXT DEFAULT 'Harley-Davidson',
         category TEXT DEFAULT 'custom',
-        year INTEGER NOT NULL,
-        mileage INTEGER NOT NULL,
-        price REAL NOT NULL,
-        description TEXT,
+    year INTEGER NOT NULL,
+    mileage INTEGER NOT NULL,
+    price REAL NOT NULL,
+    description TEXT,
         type TEXT DEFAULT 'moto',
-        featured INTEGER DEFAULT 0,
+    featured INTEGER DEFAULT 0,
         sold INTEGER DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      );
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 
-      CREATE TABLE IF NOT EXISTS vehicle_images (
-        id TEXT PRIMARY KEY,
-        vehicle_id TEXT NOT NULL,
-        filename TEXT NOT NULL,
-        is_primary INTEGER DEFAULT 0,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
-      );
-    `);
+  CREATE TABLE IF NOT EXISTS vehicle_images (
+    id TEXT PRIMARY KEY,
+    vehicle_id TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    is_primary INTEGER DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (vehicle_id) REFERENCES vehicles(id) ON DELETE CASCADE
+  );
+`);
     console.log('✅ Tabelas criadas com sucesso no SQLite!');
   }
 };
@@ -191,16 +191,16 @@ if (!isPostgres) {
 try {
   console.log('👤 Verificando usuário admin...');
   const adminExists = await db.prepare('SELECT * FROM users WHERE username = ?').get('tucanoadmin');
-  if (!adminExists) {
+if (!adminExists) {
     // Remover usuário admin antigo se existir
     await db.prepare('DELETE FROM users WHERE username = ?').run('admin');
     
     const hashedPassword = bcrypt.hashSync('tucano22131h', 10);
     await db.prepare('INSERT INTO users (id, username, password) VALUES (?, ?, ?)').run(
-      uuidv4(),
+    uuidv4(),
       'tucanoadmin',
-      hashedPassword
-    );
+    hashedPassword
+  );
     console.log('✅ Usuário admin criado com sucesso');
   } else {
     console.log('✅ Usuário admin já existe');

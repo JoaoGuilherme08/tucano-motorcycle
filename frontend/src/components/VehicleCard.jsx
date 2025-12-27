@@ -81,10 +81,10 @@ export default function VehicleCard({ vehicle, index = 0 }) {
 
           <div className={styles.footer}>
             {vehicle.sold !== 1 && (
-              <div className={styles.price}>
-                <span className={styles.priceLabel}>Preço</span>
-                <span className={styles.priceValue}>{formatPrice(vehicle.price)}</span>
-              </div>
+            <div className={styles.price}>
+              <span className={styles.priceLabel}>Preço</span>
+              <span className={styles.priceValue}>{formatPrice(vehicle.price)}</span>
+            </div>
             )}
             
             {vehicle.sold === 1 ? (
@@ -93,10 +93,10 @@ export default function VehicleCard({ vehicle, index = 0 }) {
                 <span>Vendida</span>
               </div>
             ) : (
-              <div className={styles.cta}>
-                <span>Ver detalhes</span>
-                <ArrowRight size={18} />
-              </div>
+            <div className={styles.cta}>
+              <span>Ver detalhes</span>
+              <ArrowRight size={18} />
+            </div>
             )}
           </div>
         </div>

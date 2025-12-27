@@ -200,14 +200,14 @@ export default function AdminVehicles() {
                             </span>
                           )}
                           {vehicle.featured === 1 && (
-                            <span className={`${styles.badge} ${styles.featured}`}>
-                              <Star size={12} />
-                              Destaque
-                            </span>
+                          <span className={`${styles.badge} ${styles.featured}`}>
+                            <Star size={12} />
+                            Destaque
+                          </span>
                           )}
                           {vehicle.sold !== 1 && vehicle.featured !== 1 && (
-                            <span className={styles.badge}>Normal</span>
-                          )}
+                          <span className={styles.badge}>Normal</span>
+                        )}
                         </div>
                       </td>
                       <td>
@@ -276,7 +276,7 @@ export default function AdminVehicles() {
                         Vendida
                       </span>
                     ) : (
-                      <span className={styles.mobileCardPrice}>{formatPrice(vehicle.price)}</span>
+                    <span className={styles.mobileCardPrice}>{formatPrice(vehicle.price)}</span>
                     )}
                     <div className={styles.mobileCardBadges}>
                       {vehicle.featured === 1 && (

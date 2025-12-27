@@ -322,12 +322,12 @@ export default function VehicleDetails() {
             </div>
 
             {vehicle.sold !== 1 && (
-              <div className={styles.priceSection}>
-                <span className={styles.priceLabel}>Valor</span>
-                <span className={styles.price}>{formatPrice(vehicle.price)}</span>
-              </div>
+            <div className={styles.priceSection}>
+              <span className={styles.priceLabel}>Valor</span>
+              <span className={styles.price}>{formatPrice(vehicle.price)}</span>
+            </div>
             )}
-            
+
             {vehicle.sold === 1 && (
               <div className={styles.soldSection}>
                 <CheckCircle size={24} />
@@ -339,20 +339,20 @@ export default function VehicleDetails() {
             )}
 
             {vehicle.sold !== 1 && (
-              <div className={styles.actions}>
-                <a
-                  href={whatsappLink}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="btn btn-primary"
-                >
-                  <MessageCircle size={20} />
-                  Chamar no WhatsApp
-                </a>
+            <div className={styles.actions}>
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn btn-primary"
+              >
+                <MessageCircle size={20} />
+                Chamar no WhatsApp
+              </a>
                 <a href="tel:+5518996334805" className="btn btn-secondary">
-                  <Phone size={20} />
-                  Ligar
-                </a>
+                <Phone size={20} />
+                Ligar
+              </a>
                 <a
                   href={googleMapsLink}
                   target="_blank"
@@ -362,7 +362,7 @@ export default function VehicleDetails() {
                   <MapPin size={20} />
                   Localização
                 </a>
-              </div>
+            </div>
             )}
 
             <div className={styles.secondaryActions}>
@@ -403,7 +403,7 @@ export default function VehicleDetails() {
                     <h4>{v.model}</h4>
                     <p>{v.year} • {formatMileage(v.mileage)} km</p>
                     {v.sold !== 1 ? (
-                      <span className={styles.relatedPrice}>{formatPrice(v.price)}</span>
+                    <span className={styles.relatedPrice}>{formatPrice(v.price)}</span>
                     ) : (
                       <span className={styles.relatedSold}>Vendida</span>
                     )}

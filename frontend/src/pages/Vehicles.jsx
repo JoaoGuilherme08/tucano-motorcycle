@@ -206,7 +206,7 @@ export default function Vehicles() {
                       className="input select"
                       value={filters.brand}
                       onChange={(e) => handleFilterChange('brand', e.target.value)}
-                    >
+                      >
                       <option value="">Todas as marcas</option>
                       {brandOptions.map(brand => (
                         <option key={brand} value={brand}>{brand}</option>

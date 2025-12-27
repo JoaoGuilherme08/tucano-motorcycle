@@ -60,14 +60,9 @@ export default function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <span className={styles.heroTag}>Sua próxima aventura começa aqui</span>
             <h1 className={styles.heroTitle}>
               A moto dos seus <span className="text-gradient">sonhos</span> está aqui
             </h1>
-            <p className={styles.heroDescription}>
-              Motos selecionadas com rigor, garantia de procedência e as melhores 
-              condições de pagamento. Conheça nosso estoque premium.
-            </p>
             <div className={styles.heroCta}>
               <Link to="/veiculos" className="btn btn-primary">
                 <Bike size={20} />

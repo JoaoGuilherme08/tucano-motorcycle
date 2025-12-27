@@ -6,7 +6,8 @@
   z-index: 1000;
   padding: 20px 0;
   transition: all var(--transition-medium);
-  background: transparent;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
 }
 
 .header.scrolled {
@@ -59,16 +60,20 @@
   padding: 10px 20px;
   font-size: 15px;
   font-weight: 500;
-  color: var(--color-gray-text);
+  color: rgba(255, 255, 255, 0.9);
   transition: color var(--transition-fast);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
 }
 
 .navLink:hover {
   color: var(--color-white);
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.7);
 }
 
 .navLink.active {
   color: var(--color-white);
+  font-weight: 600;
+  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.7);
 }
 
 .activeIndicator {
@@ -101,17 +106,21 @@
   gap: 8px;
   padding: 10px 20px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--color-white);
-  background: var(--color-gray-dark);
+  background: rgba(42, 42, 42, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--border-radius-md);
   transition: all var(--transition-fast);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .loginBtn:hover,
 .adminLink:hover {
-  background: var(--color-gray);
-  color: var(--color-orange);
+  background: rgba(255, 106, 0, 0.9);
+  color: var(--color-white);
+  border-color: var(--color-orange);
+  box-shadow: 0 4px 12px rgba(255, 106, 0, 0.3);
 }
 
 .userMenu {

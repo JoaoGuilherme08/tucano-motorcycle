@@ -19,13 +19,36 @@
   overflow: hidden;
 }
 
+.heroBackground::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url('/fachada.jpeg');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.7;
+  filter: blur(0.5px);
+  transition: opacity 0.3s ease;
+  will-change: transform;
+}
+
+@media (max-width: 768px) {
+  .heroBackground::before {
+    background-attachment: scroll;
+    opacity: 0.65;
+    filter: blur(0.3px);
+  }
+}
+
 .heroBgOverlay {
   position: absolute;
   inset: 0;
   background: 
     radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 106, 0, 0.15), transparent),
     radial-gradient(ellipse 60% 40% at 80% 60%, rgba(255, 106, 0, 0.08), transparent),
-    linear-gradient(180deg, var(--color-black) 0%, var(--color-black-medium) 100%);
+    linear-gradient(180deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.5) 50%, rgba(0, 0, 0, 0.6) 100%);
 }
 
 .heroGlow {
@@ -55,20 +78,6 @@
 
 .heroText {
   max-width: 800px;
-}
-
-.heroTag {
-  display: inline-block;
-  padding: 10px 20px;
-  background: rgba(255, 106, 0, 0.1);
-  color: var(--color-orange);
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  border-radius: 30px;
-  border: 1px solid rgba(255, 106, 0, 0.2);
-  margin-bottom: 24px;
 }
 
 .heroTitle {
@@ -136,13 +145,19 @@
 
 .heroScroll {
   position: absolute;
-  bottom: 32px;
+  bottom: 120px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .heroScroll {
+    bottom: 80px;
+  }
 }
 
 .heroScroll span {
