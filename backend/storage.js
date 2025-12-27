@@ -61,7 +61,6 @@ export async function uploadImage(buffer, originalName) {
         {
           folder: 'tucano-motorcycle',
           resource_type: 'image',
-          format: 'auto',
           transformation: [
             { quality: 'auto' },
             { fetch_format: 'auto' }
