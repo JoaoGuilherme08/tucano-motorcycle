@@ -232,6 +232,13 @@
   border-radius: var(--border-radius-md);
   overflow: hidden;
   background: var(--color-gray-dark);
+  border: 2px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.imageItem.primaryImage {
+  border-color: var(--color-orange);
+  box-shadow: 0 0 0 2px rgba(255, 106, 0, 0.2);
 }
 
 .imageItem img {
@@ -240,10 +247,45 @@
   object-fit: cover;
 }
 
-.removeImage {
+.imageActions {
   position: absolute;
   top: 8px;
   right: 8px;
+  display: flex;
+  gap: 6px;
+  opacity: 0;
+  transition: all var(--transition-fast);
+}
+
+.imageItem:hover .imageActions {
+  opacity: 1;
+}
+
+.setPrimaryBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  color: var(--color-gray-text);
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+  cursor: pointer;
+}
+
+.setPrimaryBtn:hover {
+  background: rgba(255, 106, 0, 0.8);
+  color: var(--color-white);
+}
+
+.setPrimaryBtn.active {
+  background: var(--color-orange);
+  color: var(--color-white);
+  opacity: 1;
+}
+
+.removeImage {
   width: 28px;
   height: 28px;
   display: flex;
@@ -252,12 +294,8 @@
   background: rgba(0, 0, 0, 0.7);
   color: var(--color-white);
   border-radius: 50%;
-  opacity: 0;
   transition: all var(--transition-fast);
-}
-
-.imageItem:hover .removeImage {
-  opacity: 1;
+  cursor: pointer;
 }
 
 .removeImage:hover {

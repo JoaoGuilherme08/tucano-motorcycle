@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import multer from 'multer';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import db, { isPostgres } from './db.js';
+import { upload, uploadImages, deleteImage, getImageUrl } from './storage.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -36,41 +36,21 @@ const corsOptions = {
   credentials: true,
 };
 
-// Criar diretório de uploads
+// Criar diretório de uploads (fallback para desenvolvimento local)
 const uploadsDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-// Configuração do Multer para upload de imagens
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueName = `${uuidv4()}${path.extname(file.originalname)}`;
-    cb(null, uniqueName);
-  }
-});
-
-const upload = multer({
-  storage,
-  limits: { fileSize: 10 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('Tipo de arquivo não permitido'));
-    }
-  }
-});
-
 // Middleware
 app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(uploadsDir));
+
+// Servir uploads locais apenas se não estiver usando Cloudinary
+if (!process.env.CLOUDINARY_CLOUD_NAME) {
+  app.use('/uploads', express.static(uploadsDir));
+}
 
 // Criar tabelas (compatível com SQLite e PostgreSQL)
 const initDatabase = async () => {
@@ -342,7 +322,12 @@ app.get('/api/vehicles', async (req, res) => {
   // Buscar imagens para cada veículo
   const vehiclesWithImages = await Promise.all(vehicles.map(async (vehicle) => {
     const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(vehicle.id);
-    return { ...vehicle, images };
+    // Converter filenames para URLs completas se necessário
+    const imagesWithUrls = images.map(img => ({
+      ...img,
+      url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, false)
+    }));
+    return { ...vehicle, images: imagesWithUrls };
   }));
   
   res.json(vehiclesWithImages);
@@ -357,7 +342,13 @@ app.get('/api/vehicles/:id', async (req, res) => {
   
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(vehicle.id);
   
-  res.json({ ...vehicle, images });
+  // Converter filenames para URLs completas se necessário
+  const imagesWithUrls = images.map(img => ({
+    ...img,
+    url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, img.filename.includes('cloudinary') || img.filename.includes('/'))
+  }));
+  
+  res.json({ ...vehicle, images: imagesWithUrls });
 });
 
 app.post('/api/vehicles', authenticate, upload.array('images', 10), async (req, res) => {
@@ -378,18 +369,25 @@ app.post('/api/vehicles', authenticate, upload.array('images', 10), async (req, 
   
   // Salvar imagens
   if (req.files && req.files.length > 0) {
-    await Promise.all(req.files.map(async (file, index) => {
+    const uploadedImages = await uploadImages(req.files);
+    await Promise.all(uploadedImages.map(async (image, index) => {
       await db.prepare(`
         INSERT INTO vehicle_images (id, vehicle_id, filename, is_primary)
         VALUES (?, ?, ?, ?)
-      `).run(uuidv4(), vehicleId, file.filename, index === 0 ? 1 : 0);
+      `).run(uuidv4(), vehicleId, image.filename, index === 0 ? 1 : 0);
     }));
   }
   
   const vehicle = await db.prepare('SELECT * FROM vehicles WHERE id = ?').get(vehicleId);
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(vehicleId);
   
-  res.status(201).json({ ...vehicle, images });
+  // Converter filenames para URLs completas se necessário
+  const imagesWithUrls = images.map(img => ({
+    ...img,
+    url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, img.filename.includes('cloudinary') || img.filename.includes('/'))
+  }));
+  
+  res.status(201).json({ ...vehicle, images: imagesWithUrls });
 });
 
 app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), async (req, res) => {
@@ -420,30 +418,62 @@ app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), async (re
     await Promise.all(imagesToRemove.map(async (imageId) => {
       const image = await db.prepare('SELECT * FROM vehicle_images WHERE id = ?').get(imageId);
       if (image) {
-        const imagePath = path.join(uploadsDir, image.filename);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
-        }
+        // Verificar se é Cloudinary (URL completa) ou local
+        const isCloudinary = image.filename.startsWith('http');
+        await deleteImage(image.filename, isCloudinary);
         await db.prepare('DELETE FROM vehicle_images WHERE id = ?').run(imageId);
       }
     }));
   }
   
+  // Processar imagem principal
+  const primaryImageId = req.body.primaryImageId;
+  
+  // Se houver uma imagem principal definida, remover is_primary de todas e definir a nova
+  if (primaryImageId) {
+    // Remover is_primary de todas as imagens existentes
+    await db.prepare('UPDATE vehicle_images SET is_primary = 0 WHERE vehicle_id = ?').run(req.params.id);
+    
+    // Definir a nova imagem principal
+    await db.prepare('UPDATE vehicle_images SET is_primary = 1 WHERE id = ? AND vehicle_id = ?').run(primaryImageId, req.params.id);
+  }
+  
   // Adicionar novas imagens
   if (req.files && req.files.length > 0) {
+    const uploadedImages = await uploadImages(req.files);
     const existingImages = await db.prepare('SELECT COUNT(*) as count FROM vehicle_images WHERE vehicle_id = ?').get(req.params.id);
-    await Promise.all(req.files.map(async (file, index) => {
+    const hasPrimary = await db.prepare('SELECT COUNT(*) as count FROM vehicle_images WHERE vehicle_id = ? AND is_primary = 1').get(req.params.id);
+    
+    await Promise.all(uploadedImages.map(async (image, index) => {
+      // Se não houver imagem principal e esta for a primeira nova, definir como principal
+      // OU se primaryImageId for uma nova imagem (começa com "new-")
+      const isPrimary = (hasPrimary.count === 0 && index === 0 && !primaryImageId) || 
+                       (primaryImageId && primaryImageId.startsWith('new-') && primaryImageId === `new-${index}`);
+      
+      const imageId = uuidv4();
       await db.prepare(`
         INSERT INTO vehicle_images (id, vehicle_id, filename, is_primary)
         VALUES (?, ?, ?, ?)
-      `).run(uuidv4(), req.params.id, file.filename, existingImages.count === 0 && index === 0 ? 1 : 0);
+      `).run(imageId, req.params.id, image.filename, isPrimary ? 1 : 0);
+      
+      // Se esta nova imagem foi marcada como principal, atualizar
+      if (primaryImageId && primaryImageId.startsWith('new-') && primaryImageId === `new-${index}`) {
+        await db.prepare('UPDATE vehicle_images SET is_primary = 0 WHERE vehicle_id = ? AND id != ?').run(req.params.id, imageId);
+        await db.prepare('UPDATE vehicle_images SET is_primary = 1 WHERE id = ?').run(imageId);
+      }
     }));
   }
   
   const vehicle = await db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
-  const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(req.params.id);
+  const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(req.params.id);
   
-  res.json({ ...vehicle, images });
+  // Converter filenames para URLs completas se necessário
+  const imagesWithUrls = images.map(img => ({
+    ...img,
+    url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, img.filename.includes('cloudinary') || img.filename.includes('/'))
+  }));
+  
+  res.json({ ...vehicle, images: imagesWithUrls });
 });
 
 app.delete('/api/vehicles/:id', authenticate, async (req, res) => {
@@ -453,14 +483,12 @@ app.delete('/api/vehicles/:id', authenticate, async (req, res) => {
     return res.status(404).json({ error: 'Veículo não encontrado' });
   }
   
-  // Remover imagens do disco
+  // Remover imagens
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(req.params.id);
-  images.forEach(image => {
-    const imagePath = path.join(uploadsDir, image.filename);
-    if (fs.existsSync(imagePath)) {
-      fs.unlinkSync(imagePath);
-    }
-  });
+  await Promise.all(images.map(async (image) => {
+    const isCloudinary = image.filename.startsWith('http');
+    await deleteImage(image.filename, isCloudinary);
+  }));
   
   await db.prepare('DELETE FROM vehicle_images WHERE vehicle_id = ?').run(req.params.id);
   await db.prepare('DELETE FROM vehicles WHERE id = ?').run(req.params.id);
@@ -469,12 +497,18 @@ app.delete('/api/vehicles/:id', authenticate, async (req, res) => {
 });
 
 // Upload de imagens
-app.post('/api/upload', authenticate, upload.array('images', 10), (req, res) => {
-  const files = req.files.map(file => ({
-    filename: file.filename,
-    url: `/uploads/${file.filename}`
-  }));
-  res.json(files);
+app.post('/api/upload', authenticate, upload.array('images', 10), async (req, res) => {
+  try {
+    const uploadedImages = await uploadImages(req.files);
+    const files = uploadedImages.map(image => ({
+      filename: image.filename,
+      url: image.url
+    }));
+    res.json(files);
+  } catch (error) {
+    console.error('Erro ao fazer upload:', error);
+    res.status(500).json({ error: 'Erro ao fazer upload das imagens' });
+  }
 });
 
 // Estatísticas para o painel admin

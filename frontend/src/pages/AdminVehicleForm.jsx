@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { 
@@ -65,6 +65,7 @@ export default function AdminVehicleForm() {
   const [images, setImages] = useState([]);
   const [existingImages, setExistingImages] = useState([]);
   const [imagesToRemove, setImagesToRemove] = useState([]);
+  const [primaryImageId, setPrimaryImageId] = useState(null); // ID da imagem principal
   const [loading, setLoading] = useState(false);
   const [fetchingData, setFetchingData] = useState(isEditing);
   const [showPreview, setShowPreview] = useState(false);
@@ -92,7 +93,13 @@ export default function AdminVehicleForm() {
         featured: vehicle.featured === 1,
         sold: vehicle.sold === 1,
       });
-      setExistingImages(vehicle.images || []);
+      const vehicleImages = vehicle.images || [];
+      setExistingImages(vehicleImages);
+      // Definir imagem principal (primeira com is_primary ou primeira da lista)
+      const primaryImg = vehicleImages.find(img => img.is_primary === 1) || vehicleImages[0];
+      if (primaryImg) {
+        setPrimaryImageId(primaryImg.id);
+      }
     } catch (error) {
       console.error('Erro ao carregar veículo:', error);
       navigate('/admin/veiculos');
@@ -177,6 +184,11 @@ export default function AdminVehicleForm() {
         data.append('removeImages', JSON.stringify(imagesToRemove));
       }
 
+      // Adicionar informação sobre qual imagem é principal
+      if (primaryImageId) {
+        data.append('primaryImageId', primaryImageId);
+      }
+
       if (isEditing) {
         await vehicleService.update(id, data);
       } else {
@@ -206,18 +218,63 @@ export default function AdminVehicleForm() {
 
   const yearOptions = Array.from({ length: 50 }, (_, i) => new Date().getFullYear() - i + 1);
 
-  const allImages = [
+  // Função para definir imagem principal
+  const setAsPrimary = (imageId, imageIndex, imageType) => {
+    if (imageType === 'existing') {
+      setPrimaryImageId(imageId);
+    } else {
+      // Para novas imagens, vamos usar um ID temporário baseado no índice
+      setPrimaryImageId(`new-${imageIndex}`);
+    }
+  };
+
+  // Preparar lista de imagens
+  const allImagesRaw = [
     ...existingImages.map(img => ({ 
       type: 'existing', 
       id: img.id, 
-      url: `${API_BASE_URL}/uploads/${img.filename}` 
+      url: img.filename.startsWith('http') ? img.filename : `${API_BASE_URL}/uploads/${img.filename}`,
+      isPrimary: img.is_primary === 1
     })),
     ...images.map((img, i) => ({ 
       type: 'new', 
       index: i, 
-      url: img.preview 
+      url: img.preview,
+      isPrimary: false
     })),
   ];
+
+  // Se não houver imagem principal definida, usar a primeira existente com is_primary ou a primeira da lista
+  useEffect(() => {
+    if (!primaryImageId) {
+      const primaryImg = existingImages.find(img => img.is_primary === 1) || existingImages[0];
+      if (primaryImg) {
+        setPrimaryImageId(primaryImg.id);
+      } else if (images.length > 0) {
+        setPrimaryImageId('new-0');
+      }
+    }
+  }, [existingImages, images.length, primaryImageId]);
+
+  // Reordenar imagens para que a principal fique primeiro
+  const allImages = useMemo(() => {
+    if (!primaryImageId) return allImagesRaw;
+    
+    const primaryIndex = allImagesRaw.findIndex(img => {
+      if (img.type === 'existing') {
+        return img.id === primaryImageId;
+      } else {
+        return `new-${img.index}` === primaryImageId;
+      }
+    });
+
+    if (primaryIndex > 0) {
+      const reordered = [...allImagesRaw];
+      const [primaryImg] = reordered.splice(primaryIndex, 1);
+      return [primaryImg, ...reordered];
+    }
+    return allImagesRaw;
+  }, [allImagesRaw, primaryImageId]);
 
   if (fetchingData) {
     return (
@@ -423,25 +480,40 @@ export default function AdminVehicleForm() {
 
               {allImages.length > 0 && (
                 <div className={styles.imageGrid}>
-                  {allImages.map((img, index) => (
-                    <div key={img.id || img.index} className={styles.imageItem}>
-                      <img src={img.url} alt={`Imagem ${index + 1}`} />
-                      <button
-                        type="button"
-                        className={styles.removeImage}
-                        onClick={() => 
-                          img.type === 'existing' 
-                            ? removeExistingImage(img.id) 
-                            : removeNewImage(img.index)
-                        }
-                      >
-                        <X size={16} />
-                      </button>
-                      {index === 0 && (
-                        <span className={styles.primaryBadge}>Principal</span>
-                      )}
-                    </div>
-                  ))}
+                  {allImages.map((img, index) => {
+                    const isPrimary = (img.type === 'existing' && img.id === primaryImageId) ||
+                                      (img.type === 'new' && `new-${img.index}` === primaryImageId);
+                    return (
+                      <div key={img.id || img.index} className={`${styles.imageItem} ${isPrimary ? styles.primaryImage : ''}`}>
+                        <img src={img.url} alt={`Imagem ${index + 1}`} />
+                        <div className={styles.imageActions}>
+                          <button
+                            type="button"
+                            className={`${styles.setPrimaryBtn} ${isPrimary ? styles.active : ''}`}
+                            onClick={() => setAsPrimary(img.id, img.index, img.type)}
+                            title={isPrimary ? 'Foto principal' : 'Definir como principal'}
+                          >
+                            <Star size={16} fill={isPrimary ? 'currentColor' : 'none'} />
+                          </button>
+                          <button
+                            type="button"
+                            className={styles.removeImage}
+                            onClick={() => 
+                              img.type === 'existing' 
+                                ? removeExistingImage(img.id) 
+                                : removeNewImage(img.index)
+                            }
+                            title="Remover imagem"
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                        {isPrimary && (
+                          <span className={styles.primaryBadge}>Principal</span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               )}
               
