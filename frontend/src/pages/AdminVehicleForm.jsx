@@ -14,8 +14,7 @@ import {
   CheckCircle
 } from 'lucide-react';
 import { vehicleService } from '../services/api';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || '${API_BASE_URL}';
+import { getImageUrl } from '../utils/imageUtils';
 import styles from './AdminVehicleForm.module.css';
 
 export default function AdminVehicleForm() {
@@ -233,7 +232,7 @@ export default function AdminVehicleForm() {
     ...existingImages.map(img => ({ 
       type: 'existing', 
       id: img.id, 
-      url: img.filename.startsWith('http') ? img.filename : `${API_BASE_URL}/uploads/${img.filename}`,
+      url: getImageUrl(img.filename),
       isPrimary: img.is_primary === 1
     })),
     ...images.map((img, i) => ({ 

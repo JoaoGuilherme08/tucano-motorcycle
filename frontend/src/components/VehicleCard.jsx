@@ -1,15 +1,12 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Gauge, Calendar, ArrowRight, Star, CheckCircle } from 'lucide-react';
+import { getImageUrl } from '../utils/imageUtils';
 import styles from './VehicleCard.module.css';
-
-const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
 
 export default function VehicleCard({ vehicle, index = 0 }) {
   const primaryImage = vehicle.images?.find(img => img.is_primary) || vehicle.images?.[0];
-  const imageUrl = primaryImage
-    ? `${API_BASE_URL}/uploads/${primaryImage.filename}`
-    : '/placeholder-moto.jpg';
+  const imageUrl = primaryImage ? getImageUrl(primaryImage.filename) : '/placeholder-moto.jpg';
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('pt-BR', {

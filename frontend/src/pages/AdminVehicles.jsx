@@ -167,7 +167,7 @@ export default function AdminVehicles() {
                           <div className={styles.vehicleImage}>
                             {primaryImage ? (
                               <img
-                                src={`${API_BASE_URL}/uploads/${primaryImage.filename}`}
+                                src={getImageUrl(primaryImage.filename)}
                                 alt={vehicle.model}
                               />
                             ) : (
@@ -260,7 +260,7 @@ export default function AdminVehicles() {
                   <div className={styles.mobileCardImage}>
                     {primaryImage ? (
                       <img
-                        src={`${API_BASE_URL}/uploads/${primaryImage.filename}`}
+                        src={getImageUrl(primaryImage.filename)}
                         alt={vehicle.model}
                       />
                     ) : (
