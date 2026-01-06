@@ -135,37 +135,38 @@ export default function Home() {
               transition={{ duration: 1.2, ease: "easeInOut" }}
             />
           ))}
-          <div className={styles.bannerOverlay}></div>
-          <div className={styles.bannerContent}>
-            <div className="container">
-              <motion.div
-                className={styles.heroContent}
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: "easeOut" }}
+        </div>
+      </section>
+
+      {/* Hero Content Section */}
+      <section className={styles.heroContentSection}>
+        <div className="container">
+          <motion.div
+            className={styles.heroContent}
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
+          >
+            <h1 className={styles.heroTitle}>
+              Sua moto dos sonhos está <span className={styles.highlight}>aqui</span>
+            </h1>
+            <div className={styles.heroButtons}>
+              <a 
+                href="https://wa.me/5518996334805" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className={styles.heroButtonPrimary}
               >
-                <h1 className={styles.heroTitle}>
-                  Sua moto dos sonhos está <span className={styles.highlight}>aqui</span>
-                </h1>
-                <div className={styles.heroButtons}>
-                  <a 
-                    href="https://wa.me/5518996334805" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className={styles.heroButtonPrimary}
-                  >
-                    <MessageCircle size={20} />
-                    Falar no WhatsApp
-                    <ArrowRight size={18} />
-                  </a>
-                  <Link to="/veiculos" className={styles.heroButtonSecondary}>
-                    Ver Todo o Estoque
-                    <ArrowRight size={18} />
-                  </Link>
-                </div>
-              </motion.div>
+                <MessageCircle size={20} />
+                Falar no WhatsApp
+                <ArrowRight size={18} />
+              </a>
+              <Link to="/veiculos" className={styles.heroButtonSecondary}>
+                Ver Todo o Estoque
+                <ArrowRight size={18} />
+              </Link>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
