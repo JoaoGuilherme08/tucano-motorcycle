@@ -720,17 +720,225 @@
 }
 
 @media (max-width: 768px) {
-  .lightbox {
+  .details {
+    padding: 80px 0 40px;
+  }
+
+  .backWrapper {
+    padding: 0 16px;
+    margin-bottom: 16px;
+  }
+
+  .grid {
+    padding: 0 16px;
+    gap: 24px;
+  }
+
+  .mainImage {
+    aspect-ratio: 16 / 10;
+  }
+
+  .navBtn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .prevBtn {
+    left: 12px;
+  }
+
+  .nextBtn {
+    right: 12px;
+  }
+
+  .imageCounter {
+    bottom: 12px;
+    right: 12px;
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .thumbnails {
+    gap: 8px;
+  }
+
+  .thumbnail {
+    width: 60px;
+    height: 45px;
+  }
+
+  .model {
+    font-size: clamp(1.25rem, 6vw, 2rem);
+  }
+
+  .specs {
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .spec {
+    gap: 8px;
+  }
+
+  .spec svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .specLabel {
+    font-size: 11px;
+  }
+
+  .specValue {
+    font-size: 14px;
+  }
+
+  .priceSection {
     padding: 20px;
   }
 
-  .lightboxNav {
-    width: 44px;
-    height: 44px;
+  .price {
+    font-size: clamp(20px, 6vw, 28px);
+  }
+
+  .soldSection {
+    padding: 20px;
+  }
+
+  .soldValue {
+    font-size: 24px;
+  }
+
+  .description {
+    padding-top: 20px;
+    margin-top: 20px;
+  }
+
+  .description h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+
+  .descriptionContent p {
+    font-size: 14px;
+  }
+
+  .expandBtn {
+    padding: 10px 16px;
+    font-size: 13px;
   }
 
   .actions {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .actions .btn {
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 14px;
+  }
+
+  .secondaryActions {
     flex-direction: column;
+    gap: 10px;
+  }
+
+  .iconBtn {
+    width: 100%;
+    min-width: auto;
+    padding: 12px 16px;
+  }
+
+  .related {
+    margin-top: 60px;
+    padding-top: 40px;
+    padding: 0 16px;
+  }
+
+  .relatedTitle {
+    font-size: 18px;
+    margin-bottom: 24px;
+  }
+
+  .relatedGrid {
+    gap: 16px;
+  }
+
+  .relatedCard {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .relatedImage {
+    width: 80px;
+    height: 60px;
+  }
+
+  .relatedInfo h4 {
+    font-size: 14px;
+  }
+
+  .relatedInfo p {
+    font-size: 12px;
+  }
+
+  .relatedPrice {
+    font-size: 14px;
+  }
+
+  .lightbox {
+    padding: 16px;
+  }
+
+  .lightboxClose {
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .lightboxNav {
+    width: 40px;
+    height: 40px;
+  }
+
+  .lightboxPrev {
+    left: 12px;
+  }
+
+  .lightboxNext {
+    right: 12px;
+  }
+
+  .lightboxCounter {
+    bottom: 16px;
+    padding: 8px 16px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .details {
+    padding: 70px 0 32px;
+  }
+
+  .mainImage {
+    aspect-ratio: 4 / 3;
+  }
+
+  .thumbnail {
+    width: 50px;
+    height: 38px;
+  }
+
+  .specs {
+    gap: 12px;
+  }
+
+  .priceSection,
+  .soldSection {
+    padding: 16px;
   }
 }
 

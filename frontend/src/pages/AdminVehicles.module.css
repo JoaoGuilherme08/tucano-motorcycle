@@ -438,3 +438,187 @@
   background: #e63329 !important;
 }
 
+@media (max-width: 768px) {
+  .adminVehicles {
+    padding: 100px 0 60px;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 32px;
+    padding: 0 16px;
+  }
+
+  .title {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .headerActions {
+    width: 100%;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .headerActions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .tableWrapper {
+    overflow-x: auto;
+    padding: 0 16px;
+  }
+
+  .table {
+    min-width: 800px;
+  }
+
+  .table th,
+  .table td {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+
+  .table th:first-child,
+  .table td:first-child {
+    padding-left: 12px;
+  }
+
+  .table th:last-child,
+  .table td:last-child {
+    padding-right: 12px;
+  }
+
+  .vehicleImage {
+    width: 60px;
+    height: 45px;
+  }
+
+  .vehicleInfo h3 {
+    font-size: 14px;
+  }
+
+  .vehicleInfo p {
+    font-size: 12px;
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
+  .actionBtn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .mobileCards {
+    padding: 0 16px;
+    gap: 12px;
+  }
+
+  .mobileCard {
+    padding: 16px;
+  }
+
+  .mobileCardHeader {
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .mobileCardImage {
+    width: 70px;
+    height: 52px;
+  }
+
+  .mobileCardInfo h3 {
+    font-size: 14px;
+  }
+
+  .mobileCardInfo p {
+    font-size: 12px;
+  }
+
+  .mobileCardPrice {
+    font-size: 15px;
+  }
+
+  .mobileCardSold {
+    font-size: 13px;
+  }
+
+  .mobileCardBadges {
+    gap: 4px;
+    margin-top: 8px;
+  }
+
+  .mobileBadge {
+    font-size: 9px;
+    padding: 3px 6px;
+  }
+
+  .mobileCardActions {
+    gap: 6px;
+    padding-top: 12px;
+  }
+
+  .mobileCardActions .btn {
+    padding: 8px;
+    font-size: 12px;
+  }
+
+  .modalOverlay {
+    padding: 16px;
+  }
+
+  .modal {
+    padding: 24px;
+    max-width: 100%;
+  }
+
+  .modalIcon {
+    width: 56px;
+    height: 56px;
+    margin-bottom: 16px;
+  }
+
+  .modal h3 {
+    font-size: 18px;
+  }
+
+  .modal p {
+    font-size: 14px;
+    margin-bottom: 24px;
+  }
+
+  .modalActions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .modalActions .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .adminVehicles {
+    padding: 90px 0 40px;
+  }
+
+  .mobileCard {
+    padding: 14px;
+  }
+
+  .mobileCardImage {
+    width: 60px;
+    height: 45px;
+  }
+}
+

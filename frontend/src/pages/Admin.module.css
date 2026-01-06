@@ -256,3 +256,119 @@
   line-height: 1.5;
 }
 
+@media (max-width: 768px) {
+  .admin {
+    padding: 100px 0 60px;
+  }
+
+  .header {
+    gap: 16px;
+    margin-bottom: 32px;
+    padding: 0 16px;
+  }
+
+  .title {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .stats {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+    padding: 0 16px;
+  }
+
+  .statCard {
+    padding: 20px;
+    gap: 12px;
+  }
+
+  .statIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .statValue {
+    font-size: clamp(20px, 5vw, 28px);
+  }
+
+  .statLabel {
+    font-size: 12px;
+  }
+
+  .sectionTitle {
+    font-size: 16px;
+    margin-bottom: 16px;
+    padding: 0 16px;
+  }
+
+  .actionsGrid {
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .actionCard {
+    padding: 20px;
+    gap: 16px;
+  }
+
+  .actionIcon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .actionInfo h3 {
+    font-size: 15px;
+  }
+
+  .actionInfo p {
+    font-size: 12px;
+  }
+
+  .tips {
+    margin-top: 32px;
+    padding: 24px;
+    margin: 32px 16px 0;
+  }
+
+  .tipsList {
+    gap: 16px;
+  }
+
+  .tipsList li {
+    gap: 16px;
+  }
+
+  .tipNumber {
+    width: 36px;
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .tipsList li strong {
+    font-size: 14px;
+  }
+
+  .tipsList li p {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .admin {
+    padding: 90px 0 40px;
+  }
+
+  .stats {
+    grid-template-columns: 1fr;
+  }
+
+  .statCard {
+    padding: 16px;
+  }
+}
+

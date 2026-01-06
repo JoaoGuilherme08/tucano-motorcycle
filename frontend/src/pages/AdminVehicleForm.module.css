@@ -589,3 +589,157 @@
   white-space: pre-wrap;
 }
 
+@media (max-width: 768px) {
+  .formPage {
+    padding: 100px 0 60px;
+  }
+
+  .header {
+    gap: 16px;
+    margin-bottom: 32px;
+    padding: 0 16px;
+  }
+
+  .backBtn {
+    width: 44px;
+    height: 44px;
+  }
+
+  .title {
+    font-size: clamp(1.25rem, 6vw, 1.75rem);
+  }
+
+  .subtitle {
+    font-size: 13px;
+  }
+
+  .content {
+    gap: 32px;
+    padding: 0 16px;
+  }
+
+  .form {
+    gap: 20px;
+  }
+
+  .fieldGroup label {
+    font-size: 12px;
+  }
+
+  .row {
+    gap: 16px;
+  }
+
+  .typeSelector {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .typeBtn {
+    padding: 14px 16px;
+    font-size: 14px;
+  }
+
+  .checkboxGroup {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .checkbox {
+    font-size: 13px;
+  }
+
+  .uploadBtn {
+    padding: 32px 24px;
+  }
+
+  .uploadBtn span {
+    font-size: 14px;
+  }
+
+  .uploadBtn small {
+    font-size: 11px;
+  }
+
+  .imageGrid {
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 10px;
+  }
+
+  .formActions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .formActions .btn {
+    width: 100%;
+  }
+
+  .previewModal {
+    padding: 16px;
+  }
+
+  .previewModalContent {
+    max-width: 100%;
+  }
+
+  .closePreview {
+    width: 40px;
+    height: 40px;
+    top: 12px;
+    right: 12px;
+  }
+
+  .fullPreview {
+    grid-template-columns: 1fr;
+  }
+
+  .fullPreviewInfo {
+    padding: 24px;
+    gap: 16px;
+  }
+
+  .fullPreviewInfo h2 {
+    font-size: 22px;
+  }
+
+  .fullPreviewSpecs {
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .fullPreviewPrice {
+    padding: 16px;
+  }
+
+  .fullPreviewPrice strong {
+    font-size: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .formPage {
+    padding: 90px 0 40px;
+  }
+
+  .header {
+    margin-bottom: 24px;
+  }
+
+  .content {
+    gap: 24px;
+  }
+
+  .form {
+    gap: 18px;
+  }
+
+  .imageGrid {
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  }
+
+  .fullPreviewInfo {
+    padding: 20px;
+  }
+}
+

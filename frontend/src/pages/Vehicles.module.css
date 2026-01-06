@@ -281,7 +281,66 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+  .vehicles {
+    padding-bottom: 60px;
+  }
+
+  .header {
+    padding: 80px 0 20px;
+  }
+
+  .title {
+    font-size: clamp(1.75rem, 6vw, 2.5rem);
+  }
+
+  .subtitle {
+    font-size: clamp(14px, 3vw, 16px);
+  }
+
+  .filtersBar {
+    top: 60px;
+    padding: 16px 0;
+  }
+
+  .filtersBarContent {
+    gap: 12px;
+  }
+
+  .searchWrapper {
+    padding: 12px 16px;
+    max-width: 100%;
+  }
+
+  .searchInput {
+    font-size: 14px;
+  }
+
+  .filtersActions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .sortWrapper,
+  .filterBtn {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .filtersPanelContent {
+    padding: 20px 0;
+    gap: 20px;
+  }
+
+  .filterGroup label {
+    font-size: 12px;
+  }
+
+  .typeBtn {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+
   .rangeInputs {
     flex-direction: column;
     gap: 10px;
@@ -290,12 +349,76 @@
   .rangeInputs input {
     width: 100%;
     min-width: 100%;
-    padding: 16px;
-    font-size: 16px;
+    padding: 14px;
+    font-size: 15px;
   }
   
   .rangeInputs span {
     display: none;
+  }
+
+  .filtersButtons {
+    grid-column: 1 / -1;
+    justify-content: stretch;
+  }
+
+  .filtersButtons .btn {
+    width: 100%;
+  }
+
+  .results {
+    padding-top: 32px;
+  }
+
+  .resultsHeader {
+    padding: 0 16px;
+    margin-bottom: 20px;
+  }
+
+  .vehiclesGrid {
+    padding: 0 16px;
+    gap: 20px;
+  }
+
+  .emptyState {
+    padding: 60px 16px;
+  }
+
+  .emptyState h3 {
+    font-size: 18px;
+  }
+
+  .emptyState p {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 70px 0 16px;
+  }
+
+  .filtersBar {
+    padding: 12px 0;
+  }
+
+  .searchWrapper {
+    padding: 10px 14px;
+  }
+
+  .sortWrapper,
+  .filterBtn {
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .filtersPanelContent {
+    padding: 16px 0;
+    gap: 16px;
+  }
+
+  .vehiclesGrid {
+    gap: 16px;
   }
 }
 

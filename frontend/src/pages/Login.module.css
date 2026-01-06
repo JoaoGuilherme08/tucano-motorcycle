@@ -179,9 +179,77 @@
   color: var(--color-orange);
 }
 
+@media (max-width: 768px) {
+  .login {
+    padding: 20px;
+  }
+
+  .card {
+    padding: 36px 28px;
+    max-width: 100%;
+  }
+
+  .logo {
+    height: 50px;
+    margin-bottom: 20px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+  }
+
+  .header p {
+    font-size: 13px;
+  }
+
+  .form {
+    gap: 18px;
+  }
+
+  .inputWrapper {
+    padding: 0 14px;
+  }
+
+  .inputWrapper input {
+    padding: 14px 0;
+    font-size: 14px;
+  }
+
+  .submitBtn {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
+
 @media (max-width: 480px) {
+  .login {
+    padding: 16px;
+  }
+
   .card {
     padding: 32px 24px;
+  }
+
+  .logo {
+    height: 45px;
+    margin-bottom: 16px;
+  }
+
+  .header h1 {
+    font-size: 20px;
+  }
+
+  .form {
+    gap: 16px;
+  }
+
+  .inputWrapper {
+    padding: 0 12px;
+  }
+
+  .inputWrapper input {
+    padding: 12px 0;
+    font-size: 16px; /* Evita zoom no iOS */
   }
 }
 

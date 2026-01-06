@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Shield, Award, Headphones, Bike } from 'lucide-react';
+import { ArrowRight, Shield, Award, Headphones, Bike, CheckCircle, Truck, CreditCard, MessageCircle } from 'lucide-react';
 import VehicleCard, { VehicleCardSkeleton } from '../components/VehicleCard';
 import { vehicleService } from '../services/api';
 import styles from './Home.module.css';
@@ -9,6 +9,17 @@ import styles from './Home.module.css';
 export default function Home() {
   const [featuredVehicles, setFeaturedVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [headerHeight, setHeaderHeight] = useState(100);
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const bannerRef = useRef(null);
+  const homeRef = useRef(null);
+
+  const banners = [
+    '/banner1.jpeg',
+    '/banner2.jpeg',
+    '/banner3.jpeg',
+    '/banner4.jpeg'
+  ];
 
   useEffect(() => {
     const fetchFeatured = async () => {
@@ -26,89 +37,136 @@ export default function Home() {
     fetchFeatured();
   }, []);
 
-  const features = [
-    {
-      icon: <Shield size={32} />,
-      title: 'Garantia de 3 Meses',
-      description: 'Todas as motos com garantia de 3 meses de motor e câmbio.',
-    },
-    {
-      icon: <Award size={32} />,
-      title: 'Serviço Completo',
-      description: 'Venda, Troca, Compra, Financiamento e Consignado em um só lugar.',
-    },
-    {
-      icon: <Headphones size={32} />,
-      title: 'Atendimento Personalizado',
-      description: 'Suporte especializado via WhatsApp para tirar todas suas dúvidas.',
-    },
-  ];
+  useEffect(() => {
+    const updateHeaderHeight = () => {
+      const header = document.querySelector('header');
+      if (header && bannerRef.current) {
+        // Obtém a altura exata do header
+        const rect = header.getBoundingClientRect();
+        const height = Math.ceil(rect.height);
+        
+        // Aplica o margin-top exatamente igual à altura do header
+        // Isso garante que a imagem comece EXATAMENTE onde o header termina
+        bannerRef.current.style.marginTop = `${height}px`;
+        bannerRef.current.style.top = '0';
+        setHeaderHeight(height);
+      }
+    };
+
+    // Atualiza imediatamente
+    updateHeaderHeight();
+    
+    // Atualiza após o DOM estar carregado
+    if (document.readyState === 'complete') {
+      updateHeaderHeight();
+    } else {
+      window.addEventListener('load', updateHeaderHeight);
+    }
+
+    // Atualiza quando a janela é redimensionada ou o zoom muda
+    const handleResize = () => {
+      requestAnimationFrame(updateHeaderHeight);
+    };
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', handleResize);
+
+    // Observa mudanças no header
+    const header = document.querySelector('header');
+    if (header) {
+      const observer = new MutationObserver(() => {
+        requestAnimationFrame(updateHeaderHeight);
+      });
+      observer.observe(header, {
+        attributes: true,
+        attributeFilter: ['class', 'style'],
+        childList: true,
+        subtree: true
+      });
+
+      // Atualiza quando há scroll (header pode mudar de tamanho)
+      const handleScroll = () => {
+        requestAnimationFrame(updateHeaderHeight);
+      };
+      window.addEventListener('scroll', handleScroll, { passive: true });
+
+      // Verificação periódica como backup
+      const intervalId = setInterval(updateHeaderHeight, 100);
+
+      return () => {
+        clearInterval(intervalId);
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('orientationchange', handleResize);
+        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('load', updateHeaderHeight);
+        observer.disconnect();
+      };
+    }
+  }, []);
+
+  // Carrossel automático de banners
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBannerIndex((prevIndex) => (prevIndex + 1) % banners.length);
+    }, 5000); // Troca a cada 5 segundos
+
+    return () => clearInterval(interval);
+  }, [banners.length]);
 
   return (
-    <div className={styles.home}>
-      {/* Hero Section */}
-      <section className={styles.hero}>
-        <div className={styles.heroBackground}>
-          <div className={styles.heroBgOverlay}></div>
-          <div className={styles.heroGlow}></div>
-        </div>
-        
-        <div className={`container ${styles.heroContent}`}>
-          <motion.div
-            className={styles.heroText}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <h1 className={styles.heroTitle}>
-              A moto dos seus <span className="text-gradient">sonhos</span> está aqui
-            </h1>
-            <div className={styles.heroCta}>
-              <Link to="/veiculos" className="btn btn-primary">
-                <Bike size={20} />
-                Ver Veículos
-                <ArrowRight size={18} />
-              </Link>
-              <a href="#sobre" className="btn btn-secondary">
-                Saiba Mais
-              </a>
+    <div ref={homeRef} className={styles.home}>
+      {/* Hero Banner - Fachada */}
+      <section 
+        ref={bannerRef}
+        className={styles.heroBanner}
+        style={{ marginTop: `${headerHeight}px` }}
+      >
+        <div className={styles.bannerImage}>
+          {banners.map((banner, index) => (
+            <motion.img
+              key={banner}
+              src={banner}
+              alt="Fachada Tucano Motorcycle"
+              className={styles.bannerImg}
+              initial={{ opacity: 0 }}
+              animate={{ 
+                opacity: index === currentBannerIndex ? 1 : 0,
+                scale: index === currentBannerIndex ? 1 : 1.05
+              }}
+              transition={{ duration: 1.2, ease: "easeInOut" }}
+            />
+          ))}
+          <div className={styles.bannerOverlay}></div>
+          <div className={styles.bannerContent}>
+            <div className="container">
+              <motion.div
+                className={styles.heroContent}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+              >
+                <h1 className={styles.heroTitle}>
+                  Sua moto dos sonhos está <span className={styles.highlight}>aqui</span>
+                </h1>
+                <div className={styles.heroButtons}>
+                  <a 
+                    href="https://wa.me/5518996334805" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className={styles.heroButtonPrimary}
+                  >
+                    <MessageCircle size={20} />
+                    Falar no WhatsApp
+                    <ArrowRight size={18} />
+                  </a>
+                  <Link to="/veiculos" className={styles.heroButtonSecondary}>
+                    Ver Todo o Estoque
+                    <ArrowRight size={18} />
+                  </Link>
+                </div>
+              </motion.div>
             </div>
-          </motion.div>
-
-          <motion.div
-            className={styles.heroStats}
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-          >
-            <div className={styles.stat}>
-              <span className={styles.statValue}>5 em 1</span>
-              <span className={styles.statLabel}>Venda • Troca • Compra • Financia • Consignado</span>
-            </div>
-            <div className={styles.statDivider}></div>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>100%</span>
-              <span className={styles.statLabel}>Clientes Satisfeitos</span>
-            </div>
-            <div className={styles.statDivider}></div>
-            <div className={styles.stat}>
-              <span className={styles.statValue}>3 meses</span>
-              <span className={styles.statLabel}>Garantia Motor e Câmbio</span>
-            </div>
-          </motion.div>
-        </div>
-
-        <motion.div
-          className={styles.heroScroll}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1.5 }}
-        >
-          <span>Rolar para baixo</span>
-          <div className={styles.scrollIndicator}>
-            <div className={styles.scrollDot}></div>
           </div>
-        </motion.div>
+        </div>
       </section>
 
       {/* Featured Vehicles */}
@@ -121,10 +179,11 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ duration: 0.5 }}
           >
-            <div className={styles.sectionTag}>Destaques</div>
-            <h2 className={styles.sectionTitle}>Motos em <span className="text-gradient">Destaque</span></h2>
+            <h2 className={styles.sectionTitle}>
+              Motos em <span className={styles.highlight}>Destaque</span>
+            </h2>
             <p className={styles.sectionDescription}>
-              Confira as motos mais procuradas do nosso estoque
+              Seleção especial de motos premium cuidadosamente escolhidas
             </p>
           </motion.div>
 
@@ -156,9 +215,9 @@ export default function Home() {
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
             >
-              <Link to="/veiculos" className="btn btn-outline">
-                Ver Todas as Motos
-                <ArrowRight size={18} />
+              <Link to="/veiculos" className={styles.ctaButton}>
+                Ver Todo o Estoque
+                <ArrowRight size={20} />
               </Link>
             </motion.div>
           )}
@@ -168,70 +227,35 @@ export default function Home() {
       {/* About Section */}
       <section id="sobre" className={styles.about}>
         <div className="container">
-          <div className={styles.aboutGrid}>
-            <motion.div
-              className={styles.aboutContent}
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6 }}
-            >
-              <div className={styles.sectionTag}>Sobre Nós</div>
+          <motion.div
+            className={styles.aboutContent}
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className={styles.aboutTag}>Sobre a Tucano</div>
             <h2 className={styles.aboutTitle}>
-              Especialistas em <span className="text-gradient">Harley-Davidson</span> e motos premium
+              Especialistas em <span className={styles.highlight}>Harley-Davidson</span> e motos premium
             </h2>
-            <p className={styles.aboutText}>
-              A Tucano Motorcycle nasceu da paixão por motos e do compromisso em oferecer 
-              as melhores experiências de compra. Somos especialistas em Harley-Davidson 
-              e trabalhamos com as melhores marcas do mercado.
-            </p>
-            <p className={styles.aboutText}>
-              Oferecemos serviços completos: <strong>Venda, Troca, Compra, Financiamento e Consignado</strong>. 
-              Todas as motos passam por inspeção rigorosa e contam com garantia de 3 meses de motor e câmbio.
-            </p>
-              <div className={styles.aboutCta}>
-                <a 
-                  href="https://wa.me/5518996334805" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="btn btn-primary"
-                >
-                  Fale Conosco
-                  <ArrowRight size={18} />
-                </a>
-              </div>
-            </motion.div>
-
-            <motion.div
-              className={styles.featuresGrid}
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-            >
-              {features.map((feature, index) => (
-                <motion.div
-                  key={feature.title}
-                  className={styles.featureCard}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 + 0.3 }}
-                  whileHover={{ y: -5 }}
-                >
-                  <div className={styles.featureIcon}>{feature.icon}</div>
-                  <h3 className={styles.featureTitle}>{feature.title}</h3>
-                  <p className={styles.featureDescription}>{feature.description}</p>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
+            <div className={styles.aboutText}>
+              <p>
+                A <strong>Tucano Motorcycle</strong> nasceu da paixão genuína por motos e do compromisso 
+                em oferecer as melhores experiências de compra. Com mais de uma década de experiência, 
+                somos referência em motos premium, especialmente em <strong>Harley-Davidson</strong>.
+              </p>
+              <p>
+                Trabalhamos apenas com as melhores marcas do mercado: Harley-Davidson, Honda, Yamaha, 
+                Triumph, BMW e outras premium, sempre priorizando qualidade, segurança e satisfação 
+                do cliente.
+              </p>
+            </div>
+          </motion.div>
         </div>
       </section>
 
       {/* CTA Section */}
       <section className={styles.ctaSection}>
-        <div className={styles.ctaBackground}></div>
         <div className="container">
           <motion.div
             className={styles.ctaContent}
@@ -241,24 +265,26 @@ export default function Home() {
             transition={{ duration: 0.6 }}
           >
             <h2 className={styles.ctaTitle}>
-              Encontrou a moto <span className="text-gradient">ideal</span>?
+              Pronto para encontrar sua <span className={styles.highlight}>moto dos sonhos</span>?
             </h2>
             <p className={styles.ctaDescription}>
-              Entre em contato agora mesmo e faça uma proposta. 
-              Trabalhamos com as melhores condições de financiamento.
+              Entre em contato conosco e descubra as melhores condições de financiamento. 
+              Estamos prontos para ajudar você a realizar seu sonho sobre duas rodas.
             </p>
             <div className={styles.ctaButtons}>
               <a 
                 href="https://wa.me/5518996334805" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="btn btn-primary"
+                className={styles.ctaPrimary}
               >
-                WhatsApp
+                <MessageCircle size={20} />
+                Falar no WhatsApp
                 <ArrowRight size={18} />
               </a>
-              <Link to="/veiculos" className="btn btn-secondary">
-                Ver Estoque
+              <Link to="/veiculos" className={styles.ctaSecondary}>
+                Ver Todo o Estoque
+                <ArrowRight size={18} />
               </Link>
             </div>
           </motion.div>
