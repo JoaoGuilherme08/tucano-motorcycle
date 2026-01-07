@@ -11,6 +11,7 @@ export default function Vehicles() {
   const [vehicles, setVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [headerHeight, setHeaderHeight] = useState(80);
   
   const [filters, setFilters] = useState({
     model: searchParams.get('model') || '',
@@ -52,6 +53,122 @@ export default function Vehicles() {
   // Rolar para o topo quando a página carrega
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
+  }, []);
+
+  // Calcular altura do header dinamicamente
+  useEffect(() => {
+    let rafId = null;
+    let lastHeight = 0;
+    let isScrolling = false;
+    let scrollRafId = null;
+
+    const updateHeaderHeight = () => {
+      const header = document.querySelector('header');
+      if (header) {
+        const rect = header.getBoundingClientRect();
+        const newHeight = Math.ceil(rect.height);
+        // Só atualiza se a altura mudou para evitar re-renders desnecessários
+        if (newHeight !== lastHeight) {
+          lastHeight = newHeight;
+          setHeaderHeight(newHeight);
+        }
+      }
+    };
+
+    const handleResize = () => {
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updateHeaderHeight);
+    };
+
+    // Loop contínuo durante scroll usando requestAnimationFrame
+    const scrollLoop = () => {
+      if (isScrolling) {
+        updateHeaderHeight();
+        scrollRafId = requestAnimationFrame(scrollLoop);
+      }
+    };
+
+    const handleScrollStart = () => {
+      if (!isScrolling) {
+        isScrolling = true;
+        scrollLoop();
+      }
+    };
+
+    const handleScrollEnd = () => {
+      isScrolling = false;
+      if (scrollRafId) {
+        cancelAnimationFrame(scrollRafId);
+        scrollRafId = null;
+      }
+      // Última atualização após parar de scrollar
+      updateHeaderHeight();
+    };
+
+    let scrollTimeout = null;
+    const handleScroll = () => {
+      handleScrollStart();
+      // Atualiza imediatamente também
+      updateHeaderHeight();
+      // Limpa timeout anterior
+      if (scrollTimeout) clearTimeout(scrollTimeout);
+      // Para o loop após 150ms sem scroll
+      scrollTimeout = setTimeout(handleScrollEnd, 150);
+    };
+
+    // Atualiza imediatamente
+    updateHeaderHeight();
+    
+    // Atualiza após o DOM estar carregado
+    if (document.readyState === 'complete') {
+      updateHeaderHeight();
+    } else {
+      window.addEventListener('load', updateHeaderHeight);
+    }
+
+    // Listeners
+    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    // Observar mudanças no header (quando muda de scrolled)
+    const header = document.querySelector('header');
+    if (header) {
+      const observer = new MutationObserver(() => {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(updateHeaderHeight);
+      });
+      observer.observe(header, {
+        attributes: true,
+        attributeFilter: ['class', 'style'],
+        childList: true,
+        subtree: true
+      });
+
+      // Verificação periódica como backup (a cada 50ms)
+      const backupInterval = setInterval(updateHeaderHeight, 50);
+
+      return () => {
+        isScrolling = false;
+        if (rafId) cancelAnimationFrame(rafId);
+        if (scrollRafId) cancelAnimationFrame(scrollRafId);
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('load', updateHeaderHeight);
+        clearInterval(backupInterval);
+        observer.disconnect();
+      };
+    } else {
+      return () => {
+        isScrolling = false;
+        if (rafId) cancelAnimationFrame(rafId);
+        if (scrollRafId) cancelAnimationFrame(scrollRafId);
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        window.removeEventListener('resize', handleResize);
+        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('load', updateHeaderHeight);
+      };
+    }
   }, []);
 
   useEffect(() => {
@@ -139,7 +256,10 @@ export default function Vehicles() {
       </section>
 
       {/* Filters Bar */}
-      <section className={styles.filtersBar}>
+      <section 
+        className={styles.filtersBar}
+        style={{ top: `${headerHeight}px` }}
+      >
         <div className="container">
           <div className={styles.filtersBarContent}>
             <div className={styles.searchWrapper}>

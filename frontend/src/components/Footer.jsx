@@ -46,10 +46,16 @@ export default function Footer() {
           <div className={styles.links}>
             <h4 className={styles.linksTitle}>Institucional</h4>
             <ul className={styles.linksList}>
-              <li><a href="#">Sobre Nós</a></li>
-              <li><a href="#">Financiamento</a></li>
-              <li><a href="#">Política de Privacidade</a></li>
-              <li><a href="#">Termos de Uso</a></li>
+              <li><Link to="/#sobre">Sobre Nós</Link></li>
+              <li>
+                <a 
+                  href="https://wa.me/5518996334805?text=Olá! Gostaria de saber mais informações sobre financiamentos."
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Financiamento
+                </a>
+              </li>
             </ul>
           </div>
 

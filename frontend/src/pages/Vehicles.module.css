@@ -45,7 +45,7 @@
 /* Filters Bar */
 .filtersBar {
   position: sticky;
-  top: 60px;
+  top: 0;
   z-index: 100;
   padding: 12px 0;
   background: rgba(0, 0, 0, 0.95);
@@ -55,7 +55,6 @@
 
 @media (min-width: 768px) {
   .filtersBar {
-    top: 80px;
     padding: 20px 0;
   }
 }
@@ -299,7 +298,6 @@
   }
 
   .filtersBar {
-    top: 60px;
     padding: 16px 0;
   }
 

@@ -12,7 +12,6 @@ import {
   ChevronDown,
   X,
   Share2,
-  Heart,
   Bike,
   CheckCircle,
   MapPin
@@ -368,10 +367,6 @@ export default function VehicleDetails() {
               <button className={styles.iconBtn} onClick={handleShare}>
                 <Share2 size={18} />
                 <span>Compartilhar</span>
-              </button>
-              <button className={styles.iconBtn}>
-                <Heart size={18} />
-                <span>Favoritar</span>
               </button>
             </div>
           </motion.div>

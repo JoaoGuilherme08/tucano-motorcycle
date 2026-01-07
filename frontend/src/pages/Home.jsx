@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowRight, Shield, Award, Headphones, Bike, CheckCircle, Truck, CreditCard, MessageCircle } from 'lucide-react';
 import VehicleCard, { VehicleCardSkeleton } from '../components/VehicleCard';
@@ -7,6 +7,7 @@ import { vehicleService } from '../services/api';
 import styles from './Home.module.css';
 
 export default function Home() {
+  const location = useLocation();
   const [featuredVehicles, setFeaturedVehicles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [headerHeight, setHeaderHeight] = useState(100);
@@ -36,6 +37,28 @@ export default function Home() {
     };
     fetchFeatured();
   }, []);
+
+  // Scroll para seção quando há hash na URL
+  useEffect(() => {
+    const hash = location.hash;
+    if (hash) {
+      // Aguarda um pouco para garantir que o DOM está renderizado
+      setTimeout(() => {
+        const element = document.querySelector(hash);
+        if (element) {
+          const header = document.querySelector('header');
+          const headerHeight = header ? header.getBoundingClientRect().height : 0;
+          const elementPosition = element.getBoundingClientRect().top + window.pageYOffset;
+          const offsetPosition = elementPosition - headerHeight - 20; // 20px de margem extra
+          
+          window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+          });
+        }
+      }, 300);
+    }
+  }, [location]);
 
   useEffect(() => {
     const updateHeaderHeight = () => {
