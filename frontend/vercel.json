@@ -1,6 +1,9 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    { 
+      "source": "/((?!favicon\\.ico|manifest\\.json|robots\\.txt|.*\\.(ico|png|jpg|jpeg|svg|webp|woff|woff2|ttf|eot)).*)", 
+      "destination": "/" 
+    }
   ],
   "headers": [
     {
@@ -17,6 +20,19 @@
         {
           "key": "X-XSS-Protection",
           "value": "1; mode=block"
+        }
+      ]
+    },
+    {
+      "source": "/favicon.ico",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        },
+        {
+          "key": "Content-Type",
+          "value": "image/x-icon"
         }
       ]
     }
