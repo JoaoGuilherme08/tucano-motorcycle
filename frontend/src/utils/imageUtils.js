@@ -22,10 +22,18 @@ export function getImageUrl(urlOrFilename) {
     return urlOrFilename;
   }
   
-  // Se começa com /api/images, construir URL completa com base URL
+  // Se começa com /api/images, usar URL relativa (funciona com proxy/reverse proxy)
   // A URL pode vir codificada (com %2F), o navegador vai decodificar automaticamente
+  // Se VITE_API_URL estiver configurado para um domínio diferente, construir URL completa
   if (urlOrFilename.startsWith('/api/images')) {
-    return `${API_BASE_URL}${urlOrFilename}`;
+    const apiUrl = import.meta.env.VITE_API_URL;
+    // Se VITE_API_URL está configurado e não é localhost, usar URL completa da API
+    if (apiUrl && !apiUrl.includes('localhost')) {
+      const baseUrl = apiUrl.endsWith('/api') ? apiUrl.slice(0, -4) : apiUrl.replace('/api', '');
+      return `${baseUrl}${urlOrFilename}`;
+    }
+    // Caso contrário, usar URL relativa (funciona quando API está no mesmo domínio via proxy)
+    return urlOrFilename;
   }
   
   // Se começa com /uploads, construir URL completa
