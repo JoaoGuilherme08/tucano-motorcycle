@@ -1,7 +1,18 @@
 // Função helper para obter a URL correta da imagem
 // O backend já retorna URLs processadas em img.url
 
-const API_BASE_URL = import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001';
+// Obter a URL base da API (sem /api no final)
+const getApiBaseUrl = () => {
+  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+  // Se termina com /api, remover
+  if (apiUrl.endsWith('/api')) {
+    return apiUrl.slice(0, -4);
+  }
+  // Se não tem /api, assumir que é a base
+  return apiUrl.replace('/api', '');
+};
+
+const API_BASE_URL = getApiBaseUrl();
 
 export function getImageUrl(urlOrFilename) {
   if (!urlOrFilename) return '/placeholder-moto.jpg';
@@ -12,6 +23,7 @@ export function getImageUrl(urlOrFilename) {
   }
   
   // Se começa com /api/images, construir URL completa com base URL
+  // A URL pode vir codificada (com %2F), o navegador vai decodificar automaticamente
   if (urlOrFilename.startsWith('/api/images')) {
     return `${API_BASE_URL}${urlOrFilename}`;
   }
