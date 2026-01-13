@@ -171,9 +171,6 @@ export default function AdminVehicleForm() {
       data.append('type', formData.type);
       data.append('featured', formData.featured ? 'true' : 'false');
       data.append('sold', formData.sold ? 'true' : 'false');
-      
-      console.log('FormData - sold value:', formData.sold, 'sending as:', formData.sold ? 'true' : 'false');
-      console.log('FormData - featured value:', formData.featured, 'sending as:', formData.featured ? 'true' : 'false');
 
       images.forEach(img => {
         data.append('images', img.file);

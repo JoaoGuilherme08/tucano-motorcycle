@@ -9,6 +9,24 @@ import { fileURLToPath } from 'url';
 import db, { isPostgres } from './db.js';
 import { upload, uploadImages, deleteImage, getImageUrl } from './storage.js';
 
+// Helper para detectar o tipo de storage da URL
+function detectStorageType(filename) {
+  if (!filename || typeof filename !== 'string') return { isRailway: false };
+  
+  // Se for URL completa (Railway Storage ou Cloudinary legado), é Railway ou externa
+  if (filename.includes('storage.railway.app') || (filename.startsWith('http') && !filename.includes('cloudinary.com'))) {
+    return { isRailway: true };
+  }
+  
+  // URLs do Cloudinary (legado) - manter compatibilidade mas não usar para novos uploads
+  if (filename.includes('cloudinary.com')) {
+    return { isRailway: false };
+  }
+  
+  // Local ou novo upload (assumir Railway se configurado)
+  return { isRailway: true };
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -47,10 +65,9 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Servir uploads locais apenas se não estiver usando Cloudinary
-if (!process.env.CLOUDINARY_CLOUD_NAME) {
+// Servir uploads locais apenas em desenvolvimento (quando Railway Storage não está configurado)
+// Em produção, todas as imagens devem estar no Railway Storage
 app.use('/uploads', express.static(uploadsDir));
-}
 
 // Criar tabelas (compatível com SQLite e PostgreSQL)
 const initDatabase = async () => {
@@ -323,10 +340,13 @@ app.get('/api/vehicles', async (req, res) => {
   const vehiclesWithImages = await Promise.all(vehicles.map(async (vehicle) => {
     const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(vehicle.id);
     // Converter filenames para URLs completas se necessário
-    const imagesWithUrls = images.map(img => ({
-      ...img,
-      url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, false)
-    }));
+    const imagesWithUrls = images.map(img => {
+      const storageType = detectStorageType(img.filename);
+      return {
+        ...img,
+        url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, storageType.isRailway)
+      };
+    });
     return { ...vehicle, images: imagesWithUrls };
   }));
   
@@ -343,10 +363,13 @@ app.get('/api/vehicles/:id', async (req, res) => {
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(vehicle.id);
   
   // Converter filenames para URLs completas se necessário
-  const imagesWithUrls = images.map(img => ({
-    ...img,
-    url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, img.filename.includes('cloudinary') || img.filename.includes('/'))
-  }));
+  const imagesWithUrls = images.map(img => {
+    const storageType = detectStorageType(img.filename);
+    return {
+      ...img,
+      url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, storageType.isRailway)
+    };
+  });
   
   res.json({ ...vehicle, images: imagesWithUrls });
 });
@@ -382,10 +405,13 @@ app.post('/api/vehicles', authenticate, upload.array('images', 10), async (req, 
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(vehicleId);
   
   // Converter filenames para URLs completas se necessário
-  const imagesWithUrls = images.map(img => ({
-    ...img,
-    url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, img.filename.includes('cloudinary') || img.filename.includes('/'))
-  }));
+  const imagesWithUrls = images.map(img => {
+    const storageType = detectStorageType(img.filename);
+    return {
+      ...img,
+      url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, storageType.isRailway)
+    };
+  });
   
   res.status(201).json({ ...vehicle, images: imagesWithUrls });
 });
@@ -418,9 +444,9 @@ app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), async (re
     await Promise.all(imagesToRemove.map(async (imageId) => {
       const image = await db.prepare('SELECT * FROM vehicle_images WHERE id = ?').get(imageId);
       if (image) {
-        // Verificar se é Cloudinary (URL completa) ou local
-        const isCloudinary = image.filename.startsWith('http');
-        await deleteImage(image.filename, isCloudinary);
+        // Verificar tipo de storage
+        const storageType = detectStorageType(image.filename);
+        await deleteImage(image.filename, storageType.isRailway);
         await db.prepare('DELETE FROM vehicle_images WHERE id = ?').run(imageId);
       }
     }));
@@ -468,10 +494,13 @@ app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), async (re
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(req.params.id);
   
   // Converter filenames para URLs completas se necessário
-  const imagesWithUrls = images.map(img => ({
-    ...img,
-    url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, img.filename.includes('cloudinary') || img.filename.includes('/'))
-  }));
+  const imagesWithUrls = images.map(img => {
+    const storageType = detectStorageType(img.filename);
+    return {
+      ...img,
+      url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, storageType.isRailway)
+    };
+  });
   
   res.json({ ...vehicle, images: imagesWithUrls });
 });
@@ -486,8 +515,8 @@ app.delete('/api/vehicles/:id', authenticate, async (req, res) => {
   // Remover imagens
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(req.params.id);
   await Promise.all(images.map(async (image) => {
-    const isCloudinary = image.filename.startsWith('http');
-    await deleteImage(image.filename, isCloudinary);
+    const storageType = detectStorageType(image.filename);
+    await deleteImage(image.filename, storageType.isRailway);
   }));
   
   await db.prepare('DELETE FROM vehicle_images WHERE vehicle_id = ?').run(req.params.id);

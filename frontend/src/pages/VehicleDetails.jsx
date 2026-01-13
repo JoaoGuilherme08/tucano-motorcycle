@@ -119,7 +119,7 @@ export default function VehicleDetails() {
           url: window.location.href,
         });
       } catch (err) {
-        console.log('Compartilhamento cancelado');
+        // Compartilhamento cancelado pelo usuário
       }
     } else {
       navigator.clipboard.writeText(window.location.href);

@@ -1,30 +1,45 @@
 // Sistema de armazenamento de imagens
-// Suporta Cloudinary (recomendado) ou armazenamento local (desenvolvimento)
+// Usa Railway Storage (S3-compatible) como padrão
 
-import { v2 as cloudinary } from 'cloudinary';
+import { S3Client, PutObjectCommand, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { v4 as uuidv4 } from 'uuid';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Configurar Cloudinary se as variáveis de ambiente estiverem disponíveis
-const useCloudinary = process.env.CLOUDINARY_CLOUD_NAME && 
-                      process.env.CLOUDINARY_API_KEY && 
-                      process.env.CLOUDINARY_API_SECRET;
+// Configuração do Railway Storage (S3-compatible)
+const RAILWAY_ENDPOINT = process.env.RAILWAY_STORAGE_ENDPOINT || 'https://storage.railway.app';
+const RAILWAY_BUCKET = process.env.RAILWAY_STORAGE_BUCKET || 'structured-case-p5vwdqw2';
+const RAILWAY_ACCESS_KEY = process.env.RAILWAY_STORAGE_ACCESS_KEY || 'tid_xAfmEsAWuBQqabLekIQwvKqAZx_GcrfNsTLLAThJSgNdWQwFzW';
+const RAILWAY_SECRET_KEY = process.env.RAILWAY_STORAGE_SECRET_KEY || 'tsec_OzPJpGZQAlPVYURC07up92YB33Ml2F0SUfyXlmP9ChB7SPRVkxkU5chXkaZoq5xDLAsH5U';
 
-if (useCloudinary) {
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-  });
-  console.log('✅ Usando Cloudinary para armazenamento de imagens');
+const useRailwayStorage = RAILWAY_BUCKET && RAILWAY_ACCESS_KEY && RAILWAY_SECRET_KEY;
+
+if (useRailwayStorage) {
+  console.log('✅ Usando Railway Storage para armazenamento de imagens');
+  console.log(`   Endpoint: ${RAILWAY_ENDPOINT}`);
+  console.log(`   Bucket: ${RAILWAY_BUCKET}`);
 } else {
-  console.log('⚠️  Cloudinary não configurado - usando armazenamento local (não persistente)');
-  console.log('📝 Configure CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY e CLOUDINARY_API_SECRET para persistência');
+  console.log('⚠️  Railway Storage não configurado - usando armazenamento local (não persistente)');
+  console.log('📝 Configure RAILWAY_STORAGE_BUCKET, RAILWAY_STORAGE_ACCESS_KEY e RAILWAY_STORAGE_SECRET_KEY');
+}
+
+// Configurar cliente S3 para Railway Storage
+let s3Client = null;
+if (useRailwayStorage) {
+  s3Client = new S3Client({
+    endpoint: RAILWAY_ENDPOINT,
+    region: 'us-east-1',
+    credentials: {
+      accessKeyId: RAILWAY_ACCESS_KEY,
+      secretAccessKey: RAILWAY_SECRET_KEY,
+    },
+    forcePathStyle: true,
+  });
 }
 
 // Configuração do Multer
@@ -33,7 +48,7 @@ if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-const storage = multer.memoryStorage(); // Usar memória para depois enviar ao Cloudinary
+const storage = multer.memoryStorage();
 
 export const upload = multer({
   storage,
@@ -53,36 +68,36 @@ export const upload = multer({
   },
 });
 
+// Função para fazer upload de uma imagem para Railway Storage
+async function uploadToRailway(buffer, originalName) {
+  const ext = path.extname(originalName).toLowerCase().replace('.', '') || 'jpg';
+  const filename = `${uuidv4()}.${ext}`;
+  const key = `tucano-motorcycle/${filename}`;
+  
+  const contentType = `image/${ext === 'jpg' ? 'jpeg' : ext}`;
+  
+  const command = new PutObjectCommand({
+    Bucket: RAILWAY_BUCKET,
+    Key: key,
+    Body: buffer,
+    ContentType: contentType,
+  });
+
+  await s3Client.send(command);
+  
+  const url = `${RAILWAY_ENDPOINT}/${RAILWAY_BUCKET}/${key}`;
+  
+  return {
+    filename: url,
+    url: url,
+    railway: true
+  };
+}
+
 // Função para fazer upload de uma imagem
 export async function uploadImage(buffer, originalName) {
-  if (useCloudinary) {
-    return new Promise((resolve, reject) => {
-      const uploadStream = cloudinary.uploader.upload_stream(
-        {
-          folder: 'tucano-motorcycle',
-          resource_type: 'image',
-          transformation: [
-            { quality: 'auto' },
-            { fetch_format: 'auto' }
-          ]
-        },
-        (error, result) => {
-          if (error) {
-            console.error('Erro ao fazer upload para Cloudinary:', error);
-            reject(error);
-          } else {
-            // Salvar a URL completa no filename para facilitar a identificação
-            resolve({
-              filename: result.secure_url, // Salvar URL completa
-              url: result.secure_url,
-              cloudinary: true
-            });
-          }
-        }
-      );
-      
-      uploadStream.end(buffer);
-    });
+  if (useRailwayStorage) {
+    return await uploadToRailway(buffer, originalName);
   } else {
     // Fallback para armazenamento local (não persistente)
     const filename = `${Date.now()}-${Math.random().toString(36).substring(7)}-${originalName}`;
@@ -93,7 +108,7 @@ export async function uploadImage(buffer, originalName) {
     return {
       filename,
       url: `/uploads/${filename}`,
-      cloudinary: false
+      railway: false
     };
   }
 }
@@ -106,31 +121,38 @@ export async function uploadImages(files) {
 }
 
 // Função para deletar uma imagem
-export async function deleteImage(filename, isCloudinary = false) {
-  if (isCloudinary && useCloudinary) {
+export async function deleteImage(filename, isRailway = false) {
+  // Detectar automaticamente se é Railway Storage pela URL
+  const isRailwayUrl = filename.includes('storage.railway.app') || filename.startsWith(RAILWAY_ENDPOINT);
+  const shouldUseRailway = (isRailway || isRailwayUrl) && useRailwayStorage;
+  
+  if (shouldUseRailway) {
     try {
-      // Se for uma URL completa do Cloudinary, extrair o public_id
-      let publicId = filename;
-      if (filename.startsWith('http')) {
-        // Extrair public_id da URL do Cloudinary
-        // Exemplo: https://res.cloudinary.com/cloud_name/image/upload/v1234567890/tucano-motorcycle/xyz.jpg
-        const urlParts = filename.split('/');
-        const uploadIndex = urlParts.findIndex(part => part === 'upload');
-        if (uploadIndex !== -1 && uploadIndex + 1 < urlParts.length) {
-          // Pegar tudo após 'upload/v...' ou 'upload/'
-          const afterUpload = urlParts.slice(uploadIndex + 2).join('/');
-          // Remover extensão se houver
-          publicId = afterUpload.replace(/\.[^/.]+$/, '');
+      // Extrair key da URL do Railway Storage
+      let key = filename;
+      if (filename.startsWith(RAILWAY_ENDPOINT)) {
+        // URL completa: https://storage.railway.app/bucket/key
+        const urlParts = filename.replace(`${RAILWAY_ENDPOINT}/`, '').split('/');
+        if (urlParts.length > 1) {
+          key = urlParts.slice(1).join('/'); // Remover bucket name
         }
-      } else if (!filename.includes('/')) {
-        // Se for só o nome, adicionar o folder
-        publicId = `tucano-motorcycle/${filename}`;
+      } else if (filename.startsWith('http')) {
+        // URL completa de outro formato
+        const urlParts = new URL(filename).pathname.split('/').filter(p => p);
+        if (urlParts.length > 1) {
+          key = urlParts.slice(1).join('/'); // Remover bucket name
+        }
       }
       
-      await cloudinary.uploader.destroy(publicId);
-      console.log('✅ Imagem deletada do Cloudinary:', publicId);
+      const command = new DeleteObjectCommand({
+        Bucket: RAILWAY_BUCKET,
+        Key: key,
+      });
+      
+      await s3Client.send(command);
+      console.log('✅ Imagem deletada do Railway Storage:', key);
     } catch (error) {
-      console.error('Erro ao deletar imagem do Cloudinary:', error);
+      console.error('Erro ao deletar imagem do Railway Storage:', error);
       // Não falhar se a imagem não existir
     }
   } else {
@@ -144,20 +166,28 @@ export async function deleteImage(filename, isCloudinary = false) {
 }
 
 // Função para obter a URL da imagem
-export function getImageUrl(filename, isCloudinary = false) {
-  if (isCloudinary && useCloudinary) {
-    // Se já é uma URL completa, retornar
-    if (filename.startsWith('http')) {
-      return filename;
-    }
-    // Construir URL do Cloudinary
-    const publicId = filename.includes('/') ? filename : `tucano-motorcycle/${filename}`;
-    return cloudinary.url(publicId, {
-      secure: true,
-      transformation: [{ quality: 'auto', fetch_format: 'auto' }]
-    });
-  } else {
-    return `/uploads/${filename}`;
+export function getImageUrl(filename, isRailway = false) {
+  // Se já é uma URL completa, retornar diretamente
+  if (filename && filename.startsWith('http')) {
+    return filename;
   }
+  
+  // Detectar automaticamente se é Railway Storage pela URL antiga do Cloudinary
+  const isCloudinaryUrl = filename && filename.includes('cloudinary.com');
+  const isRailwayUrl = filename && filename.includes('storage.railway.app');
+  
+  // Se for URL do Cloudinary, manter como está (para compatibilidade com imagens antigas)
+  if (isCloudinaryUrl) {
+    return filename;
+  }
+  
+  // Se for Railway Storage ou se useRailwayStorage estiver ativo
+  if ((isRailway || isRailwayUrl || useRailwayStorage) && !isCloudinaryUrl) {
+    // Construir URL do Railway Storage
+    const key = filename && filename.includes('/') ? filename : `tucano-motorcycle/${filename || 'unknown'}`;
+    return `${RAILWAY_ENDPOINT}/${RAILWAY_BUCKET}/${key}`;
+  }
+  
+  // Fallback para local
+  return `/uploads/${filename || 'unknown'}`;
 }
-
