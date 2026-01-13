@@ -22,6 +22,14 @@ export function getImageUrl(urlOrFilename) {
     return urlOrFilename;
   }
   
+  // Se começa com images/ (sem /api), concatenar com API_URL que já contém /api
+  if (urlOrFilename.startsWith('images/')) {
+    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    // Garantir que API_URL termina com /api
+    const baseUrl = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
+    return `${baseUrl}/${urlOrFilename}`;
+  }
+  
   // Se começa com /api/images, usar URL relativa (funciona com proxy/reverse proxy)
   // A URL pode vir codificada (com %2F), o navegador vai decodificar automaticamente
   // Se VITE_API_URL estiver configurado para um domínio diferente, construir URL completa
