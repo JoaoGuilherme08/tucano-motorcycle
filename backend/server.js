@@ -501,9 +501,24 @@ app.delete('/api/vehicles/:id', authenticate, async (req, res) => {
 // Endpoint para servir imagens do Railway Storage (proxy)
 app.get('/api/images/*', async (req, res) => {
   try {
-    const imageKey = decodeURIComponent(req.params[0]);
+    // Capturar o caminho completo após /api/images/
+    // req.path já vem decodificado pelo Express, mas vamos tentar ambos os casos
+    let fullPath = req.path.replace('/api/images/', '');
     
-    console.log('📥 Requisição de imagem recebida, key:', imageKey);
+    // Se ainda estiver codificado, decodificar
+    let imageKey;
+    try {
+      imageKey = decodeURIComponent(fullPath);
+    } catch (e) {
+      // Se já estiver decodificado, usar direto
+      imageKey = fullPath;
+    }
+    
+    console.log('📥 Requisição de imagem recebida');
+    console.log('   req.path:', req.path);
+    console.log('   req.url:', req.url);
+    console.log('   fullPath:', fullPath);
+    console.log('   imageKey (final):', imageKey);
     
     if (!imageKey) {
       return res.status(400).json({ error: 'Caminho da imagem não fornecido' });
