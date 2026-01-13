@@ -36,6 +36,7 @@ export function getImageUrl(urlOrFilename) {
     return urlOrFilename;
   }
   
+  
   // Se começa com /uploads, construir URL completa
   if (urlOrFilename.startsWith('/uploads')) {
     return `${API_BASE_URL}${urlOrFilename}`;
