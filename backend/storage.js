@@ -189,6 +189,7 @@ export function getImageUrl(filename) {
   
   if (key) {
     const proxyUrl = `images/${encodeURIComponent(key)}`;
+    
     console.log('✅ URL proxy gerada:', proxyUrl);
     return proxyUrl;
   }

@@ -25,6 +25,7 @@ export function getImageUrl(urlOrFilename) {
   // Se começa com images/ (sem /api), concatenar com API_URL que já contém /api
   if (urlOrFilename.startsWith('images/')) {
     const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+    
     // Garantir que API_URL termina com /api
     const baseUrl = apiUrl.endsWith('/api') ? apiUrl : `${apiUrl}/api`;
     return `${baseUrl}/${urlOrFilename}`;
