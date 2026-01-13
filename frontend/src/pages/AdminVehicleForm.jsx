@@ -243,7 +243,7 @@ export default function AdminVehicleForm() {
       ...existingImages.map(img => ({ 
         type: 'existing', 
         id: img.id, 
-        url: getImageUrl(img.filename),
+        url: img.url ? getImageUrl(img.url) : getImageUrl(img.filename),
         isPrimary: img.is_primary === 1
       })),
       ...images.map((img, i) => ({ 

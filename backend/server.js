@@ -7,25 +7,9 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import db, { isPostgres } from './db.js';
-import { upload, uploadImages, deleteImage, getImageUrl } from './storage.js';
+import { upload, uploadImages, deleteImage, getImageUrl, getImageStream } from './storage.js';
 
-// Helper para detectar o tipo de storage da URL
-function detectStorageType(filename) {
-  if (!filename || typeof filename !== 'string') return { isRailway: false };
-  
-  // Se for URL completa (Railway Storage ou Cloudinary legado), é Railway ou externa
-  if (filename.includes('storage.railway.app') || (filename.startsWith('http') && !filename.includes('cloudinary.com'))) {
-    return { isRailway: true };
-  }
-  
-  // URLs do Cloudinary (legado) - manter compatibilidade mas não usar para novos uploads
-  if (filename.includes('cloudinary.com')) {
-    return { isRailway: false };
-  }
-  
-  // Local ou novo upload (assumir Railway se configurado)
-  return { isRailway: true };
-}
+// Helper removido - getImageUrl já faz tudo
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -339,14 +323,11 @@ app.get('/api/vehicles', async (req, res) => {
   // Buscar imagens para cada veículo
   const vehiclesWithImages = await Promise.all(vehicles.map(async (vehicle) => {
     const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(vehicle.id);
-    // Converter filenames para URLs completas se necessário
-    const imagesWithUrls = images.map(img => {
-      const storageType = detectStorageType(img.filename);
-      return {
-        ...img,
-        url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, storageType.isRailway)
-      };
-    });
+  // Converter filenames para URLs do proxy
+  const imagesWithUrls = images.map(img => ({
+    ...img,
+    url: getImageUrl(img.filename)
+  }));
     return { ...vehicle, images: imagesWithUrls };
   }));
   
@@ -362,14 +343,11 @@ app.get('/api/vehicles/:id', async (req, res) => {
   
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(vehicle.id);
   
-  // Converter filenames para URLs completas se necessário
-  const imagesWithUrls = images.map(img => {
-    const storageType = detectStorageType(img.filename);
-    return {
-      ...img,
-      url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, storageType.isRailway)
-    };
-  });
+  // Converter filenames para URLs do proxy
+  const imagesWithUrls = images.map(img => ({
+    ...img,
+    url: getImageUrl(img.filename)
+  }));
   
   res.json({ ...vehicle, images: imagesWithUrls });
 });
@@ -392,8 +370,12 @@ app.post('/api/vehicles', authenticate, upload.array('images', 10), async (req, 
   
   // Salvar imagens
   if (req.files && req.files.length > 0) {
+    console.log('📤 Fazendo upload de', req.files.length, 'imagens...');
     const uploadedImages = await uploadImages(req.files);
+    console.log('✅ Upload concluído, imagens:', uploadedImages.map(img => img.filename));
+    
     await Promise.all(uploadedImages.map(async (image, index) => {
+      console.log('💾 Salvando imagem no banco:', image.filename);
       await db.prepare(`
         INSERT INTO vehicle_images (id, vehicle_id, filename, is_primary)
         VALUES (?, ?, ?, ?)
@@ -404,14 +386,11 @@ app.post('/api/vehicles', authenticate, upload.array('images', 10), async (req, 
   const vehicle = await db.prepare('SELECT * FROM vehicles WHERE id = ?').get(vehicleId);
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(vehicleId);
   
-  // Converter filenames para URLs completas se necessário
-  const imagesWithUrls = images.map(img => {
-    const storageType = detectStorageType(img.filename);
-    return {
-      ...img,
-      url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, storageType.isRailway)
-    };
-  });
+  // Converter filenames para URLs do proxy
+  const imagesWithUrls = images.map(img => ({
+    ...img,
+    url: getImageUrl(img.filename)
+  }));
   
   res.status(201).json({ ...vehicle, images: imagesWithUrls });
 });
@@ -444,9 +423,7 @@ app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), async (re
     await Promise.all(imagesToRemove.map(async (imageId) => {
       const image = await db.prepare('SELECT * FROM vehicle_images WHERE id = ?').get(imageId);
       if (image) {
-        // Verificar tipo de storage
-        const storageType = detectStorageType(image.filename);
-        await deleteImage(image.filename, storageType.isRailway);
+        await deleteImage(image.filename, true);
         await db.prepare('DELETE FROM vehicle_images WHERE id = ?').run(imageId);
       }
     }));
@@ -493,14 +470,11 @@ app.put('/api/vehicles/:id', authenticate, upload.array('images', 10), async (re
   const vehicle = await db.prepare('SELECT * FROM vehicles WHERE id = ?').get(req.params.id);
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ? ORDER BY is_primary DESC').all(req.params.id);
   
-  // Converter filenames para URLs completas se necessário
-  const imagesWithUrls = images.map(img => {
-    const storageType = detectStorageType(img.filename);
-    return {
-      ...img,
-      url: img.filename.startsWith('http') ? img.filename : getImageUrl(img.filename, storageType.isRailway)
-    };
-  });
+  // Converter filenames para URLs do proxy
+  const imagesWithUrls = images.map(img => ({
+    ...img,
+    url: getImageUrl(img.filename)
+  }));
   
   res.json({ ...vehicle, images: imagesWithUrls });
 });
@@ -515,14 +489,62 @@ app.delete('/api/vehicles/:id', authenticate, async (req, res) => {
   // Remover imagens
   const images = await db.prepare('SELECT * FROM vehicle_images WHERE vehicle_id = ?').all(req.params.id);
   await Promise.all(images.map(async (image) => {
-    const storageType = detectStorageType(image.filename);
-    await deleteImage(image.filename, storageType.isRailway);
+    await deleteImage(image.filename, true);
   }));
   
   await db.prepare('DELETE FROM vehicle_images WHERE vehicle_id = ?').run(req.params.id);
   await db.prepare('DELETE FROM vehicles WHERE id = ?').run(req.params.id);
   
   res.json({ message: 'Veículo removido com sucesso' });
+});
+
+// Endpoint para servir imagens do Railway Storage (proxy)
+app.get('/api/images/*', async (req, res) => {
+  try {
+    const imageKey = decodeURIComponent(req.params[0]);
+    
+    console.log('📥 Requisição de imagem recebida, key:', imageKey);
+    
+    if (!imageKey) {
+      return res.status(400).json({ error: 'Caminho da imagem não fornecido' });
+    }
+    
+    // Buscar imagem do Railway Storage
+    console.log('🔍 Buscando imagem no Railway Storage com key:', imageKey);
+    const imageStream = await getImageStream(imageKey);
+    console.log('✅ Imagem encontrada no Railway Storage');
+    
+    // Detectar content type pela extensão
+    const ext = imageKey.split('.').pop()?.toLowerCase();
+    const contentTypeMap = {
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'png': 'image/png',
+      'gif': 'image/gif',
+      'webp': 'image/webp',
+    };
+    const contentType = contentTypeMap[ext] || 'image/jpeg';
+    
+    // Configurar headers para retornar o arquivo da imagem
+    res.setHeader('Content-Type', contentType);
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('Content-Disposition', `inline; filename="${imageKey.split('/').pop()}"`);
+    
+    // Converter stream para buffer e enviar o arquivo da imagem
+    // O AWS SDK retorna um ReadableStream que precisa ser convertido
+    const chunks = [];
+    for await (const chunk of imageStream) {
+      chunks.push(chunk);
+    }
+    const buffer = Buffer.concat(chunks);
+    
+    // Retornar o arquivo da imagem diretamente (não um link)
+    res.send(buffer);
+    
+  } catch (error) {
+    console.error('Erro ao servir imagem:', error);
+    res.status(404).json({ error: 'Imagem não encontrada', details: error.message });
+  }
 });
 
 // Upload de imagens

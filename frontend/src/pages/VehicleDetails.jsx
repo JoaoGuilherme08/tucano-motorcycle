@@ -186,7 +186,7 @@ export default function VehicleDetails() {
               {images.length > 0 ? (
                 <>
                   <img
-                    src={getImageUrl(currentImage.filename)}
+                    src={currentImage?.url ? getImageUrl(currentImage.url) : getImageUrl(currentImage?.filename)}
                     alt={vehicle.model}
                     onClick={() => setShowLightbox(true)}
                   />
@@ -229,7 +229,7 @@ export default function VehicleDetails() {
                     onClick={() => setCurrentImageIndex(index)}
                   >
                     <img
-                      src={getImageUrl(img.filename)}
+                      src={img?.url ? getImageUrl(img.url) : getImageUrl(img?.filename)}
                       alt={`${vehicle.model} - Imagem ${index + 1}`}
                     />
                   </button>
@@ -384,7 +384,7 @@ export default function VehicleDetails() {
                   <div className={styles.relatedImage}>
                     {v.images?.[0] ? (
                       <img
-                        src={getImageUrl(v.images[0].filename)}
+                        src={v.images[0]?.url ? getImageUrl(v.images[0].url) : getImageUrl(v.images[0]?.filename)}
                         alt={v.model}
                       />
                     ) : (
@@ -425,7 +425,7 @@ export default function VehicleDetails() {
             
             <div className={styles.lightboxContent} onClick={(e) => e.stopPropagation()}>
               <img
-                src={getImageUrl(currentImage?.filename)}
+                src={currentImage?.url ? getImageUrl(currentImage.url) : getImageUrl(currentImage?.filename)}
                 alt={vehicle.model}
               />
             </div>

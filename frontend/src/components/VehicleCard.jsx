@@ -6,7 +6,9 @@ import styles from './VehicleCard.module.css';
 
 export default function VehicleCard({ vehicle, index = 0 }) {
   const primaryImage = vehicle.images?.find(img => img.is_primary) || vehicle.images?.[0];
-  const imageUrl = primaryImage ? getImageUrl(primaryImage.filename) : '/placeholder-moto.jpg';
+  // Usar a URL já processada pelo backend (que vem como /api/images/...)
+  // getImageUrl vai converter para URL completa se necessário
+  const imageUrl = primaryImage?.url ? getImageUrl(primaryImage.url) : (primaryImage ? getImageUrl(primaryImage.filename) : '/placeholder-moto.jpg');
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('pt-BR', {
